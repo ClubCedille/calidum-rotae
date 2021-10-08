@@ -1,0 +1,49 @@
+@startuml calidum-rotae
+
+actor User
+
+node DiscordAPI as "Discord API" {
+ 	component DiscordAPIComponent
+}
+
+node MattermostAPI as "Mattermost API" {
+ 	component MattermostAPIComponent
+}
+
+node Email as "Email Sender" {
+ 	component EmailSenderComponent
+}
+
+database Database as "Service DB" {
+}
+
+node Cluster as "Cluster" {
+	interface "DataProvider" as DP
+	interface "AlertProvider" as AP
+	component DatabaseService
+	
+	'1) Discord Provider -> calls Discord API
+	'2) Mattermost Provider -> calls Mattermost API
+	'3) Email Provider -> calls email (i.e.: mailgun) API
+
+	component DiscordProvider
+	component MattermostProvider
+	component EmailProvider
+
+	[DatabaseService] <- DP
+ 	DP <.. [CalidumRotaeService] : use
+
+	[AP] --> DiscordProvider
+	[AP] --> MattermostProvider
+	[AP] --> EmailProvider 
+ 	AP <. [CalidumRotaeService] : use
+}
+
+
+User --> CalidumRotaeService : "API"
+DatabaseService --> Database
+DiscordProvider --> DiscordAPIComponent  : HTTPS
+MattermostProvider --> MattermostAPIComponent  : HTTPS
+EmailProvider --> EmailSenderComponent  : HTTPS
+
+@enduml
