@@ -1,7 +1,5 @@
 @startuml calidum-rotae
 
-actor User
-
 node DiscordAPI as "Discord API" {
  	component DiscordAPIComponent
 }
@@ -14,14 +12,18 @@ node Email as "Email Sender" {
  	component EmailSenderComponent
 }
 
-database Database as "Service DB" {
+node Data as "Google Cloud SQL" {
+	database Database as "Postgres DB" {
+	}
 }
 
-node Cluster as "Cluster" {
-	interface "DataProvider" as DP
-	interface "AlertProvider" as AP
-	component DatabaseService
+cloud Cluster as "Cluster" {
+	component CalidumRotaeService
+	component Frontend
+	interface " " as AP
 	
+	Frontend -d(0)-> CalidumRotaeService : POST HTTP Request
+
 	'1) Discord Provider -> calls Discord API
 	'2) Mattermost Provider -> calls Mattermost API
 	'3) Email Provider -> calls email (i.e.: mailgun) API
@@ -30,18 +32,14 @@ node Cluster as "Cluster" {
 	component MattermostProvider
 	component EmailProvider
 
-	[DatabaseService] <- DP
- 	DP <.. [CalidumRotaeService] : use
+	AP --> DiscordProvider
+	AP --> MattermostProvider
+	AP --> EmailProvider 
 
-	[AP] --> DiscordProvider
-	[AP] --> MattermostProvider
-	[AP] --> EmailProvider 
- 	AP <. [CalidumRotaeService] : use
+ 	AP )- [CalidumRotaeService]
 }
 
-
-User --> CalidumRotaeService : "API"
-DatabaseService --> Database
+CalidumRotaeService --> Database
 DiscordProvider --> DiscordAPIComponent  : HTTPS
 MattermostProvider --> MattermostAPIComponent  : HTTPS
 EmailProvider --> EmailSenderComponent  : HTTPS
