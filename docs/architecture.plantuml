@@ -4,10 +4,6 @@ node DiscordAPI as "Discord API" {
  	component DiscordAPIComponent
 }
 
-node MattermostAPI as "Mattermost API" {
- 	component MattermostAPIComponent
-}
-
 node Email as "Email Sender" {
  	component EmailSenderComponent
 }
@@ -25,23 +21,19 @@ cloud Cluster as "Cluster" {
 	Frontend -d(0)-> CalidumRotaeService : POST HTTP Request
 
 	'1) Discord Provider -> calls Discord API
-	'2) Mattermost Provider -> calls Mattermost API
-	'3) Email Provider -> calls email (i.e.: mailgun) API
+	'2) Email Provider -> calls email (i.e.: mailgun) API
 
 	component DiscordProvider
-	component MattermostProvider
 	component EmailProvider
 
-	AP --> DiscordProvider
-	AP --> MattermostProvider
-	AP --> EmailProvider 
+	AP --> DiscordProvider : gRPC
+	AP --> EmailProvider : gRPC
 
  	AP )- [CalidumRotaeService]
 }
 
 CalidumRotaeService --> Database
 DiscordProvider --> DiscordAPIComponent  : HTTPS
-MattermostProvider --> MattermostAPIComponent  : HTTPS
 EmailProvider --> EmailSenderComponent  : HTTPS
 
 @enduml
