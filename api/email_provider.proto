@@ -1,0 +1,21 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider;email_provider";
+
+package email_provider;
+
+import "provider.proto";
+
+
+message SendEmailRequest {
+	provider.Requester Sender = 1;
+	string RequestService = 2;
+	string RequestDetails = 3; 
+}
+
+message SendEmailResponse {}
+
+
+service EmailProvider {
+	// SendEmail sends an email to someone
+	rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);
+}
