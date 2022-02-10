@@ -1,0 +1,21 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider;discord_provider";
+
+package discord_provider;
+
+import "provider.proto";
+
+
+message SendMessageRequest {
+	provider.Requester Sender = 1;
+	string RequestService = 2;
+	string RequestDetails = 3; 
+}
+
+message SendMessageResponse {}
+
+
+service DiscordProvider {
+	// SendMessage sends a message to a Discord webhook
+	rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+}

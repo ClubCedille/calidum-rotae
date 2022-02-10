@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/provider;provider";
+
+package provider;
+
+
+message Requester {
+	string FirstName = 1;
+	string LastName = 2;
+	string Email = 3;
+	string PhoneNumber = 4;
+}

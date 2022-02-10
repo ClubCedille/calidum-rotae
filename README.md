@@ -7,3 +7,7 @@ Backend for Calidum Rotae
 
 ## Entity-Relationship Diagram | Base de données
 ![calidum-rotae-db](db-scripts/calidum-rotae-ER-diagram.png)
+
+## Contributing
+
+For the in-depth contributing guide, head over to [CONTRIBUTING.md](./CONTRIBUTING.md).
