@@ -17,7 +17,7 @@ type Server struct {
 
 func (server *Server) SendMessage(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
 	log.Printf("Received message content from client: %s", message.Sender)
-	// Sends a message to a Discord webhook here
+	// sends an email to someone here
 	return &email_provider.SendEmailResponse{}, nil
 }
 
