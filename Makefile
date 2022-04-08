@@ -4,8 +4,8 @@ help:  	## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
 setup: 	## Setup command
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 # gRPC protoc template
 define grpc_template
