@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
@@ -14,7 +13,6 @@ import (
 
 type HTTPServer struct {
 	server *http.Server
-	socket net.Listener
 }
 
 func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*HTTPServer, error) {
@@ -25,20 +23,11 @@ func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*HTTPServer, 
 	httpServer.Addr = addr
 	httpServer.Handler = initHTTPServerHandler(ctx)
 
-	// Make sure socket can be opened
-	socket, err := net.Listen("tcp", addr)
-	if err != nil {
-		return nil, fmt.Errorf("error opening socket on address %s: %s", addr, err)
-	}
-
-	return &HTTPServer{
-		server: httpServer,
-		socket: socket,
-	}, nil
+	return &HTTPServer{httpServer}, nil
 }
 
 func (s HTTPServer) Serve() error {
-	return s.server.Serve(s.socket)
+	return s.server.ListenAndServe()
 }
 
 func initHTTPServerHandler(ctx context.Context) *gin.Engine {
