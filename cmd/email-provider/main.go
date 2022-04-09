@@ -1,39 +1,64 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
+	"os"
 
-	"google.golang.org/grpc"
-
-	context "context"
-
-	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
+	"github.com/clubcedille/calidum-rotae-backend/cmd/email-provider/config"
+	"github.com/clubcedille/calidum-rotae-backend/cmd/email-provider/server"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-type Server struct {
-	email_provider.EmailProviderServer
+var (
+	emailCmd = &cobra.Command{
+		Use:          "email_provider",
+		Short:        "Email provider microservice for the calidum rotae app",
+		SilenceUsage: true,
+		RunE:         runEmailProvider,
+	}
+)
+
+func init() {
+	emailCmd.Flags().Uint32(config.FlagPort, 0, "The gRPC port on which to listen to")
+	emailCmd.Flags().String(config.FlagLogLevel, "info", "The level of logs to print to stdout")
+
+	emailCmd.MarkFlagRequired(config.FlagPort)
 }
 
-func (server *Server) SendMessage(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
-	log.Printf("Received message content from client: %s", message.Sender)
-	// sends an email to someone here
-	return &email_provider.SendEmailResponse{}, nil
-}
-
-const PORT string = "PORT"
-
-func main() {
-	lt, err := net.Listen("tcp", PORT)
-	if err != nil {
-		log.Fatalf("Error starting tcp listener on %s : %v", PORT, err)
+func runEmailProvider(cmd *cobra.Command, args []string) (err error) {
+	v := viper.New()
+	if err := v.BindPFlags(cmd.Flags()); err != nil {
+		return fmt.Errorf("error when binding flags: %s", err)
 	}
 
-	server := Server{}
-	grpcServer := grpc.NewServer()
-	email_provider.RegisterEmailProviderServer(grpcServer, &server)
+	// TODO: Maybe use this ctx in the future.
+	// ctxLogger := logger.Initialize(logger.Config{
+	// 	Level: v.GetString(config.FlagLogLevel),
+	// })
+	// ctx := context.WithValue(cmd.Context(), logger.CtxKey, ctxLogger)
 
+	v.AutomaticEnv()
+	port := v.GetUint32(config.FlagPort)
+	lt, err := net.Listen("tcp", fmt.Sprintf(":%d", v.GetUint32(config.FlagPort)))
+	if err != nil {
+		return fmt.Errorf("error starting tcp listener on port %d: %s", port, err)
+	}
+
+	server := server.NewServer()
+	grpcServer := server.ConfigureGrpc()
 	if err := grpcServer.Serve(lt); err != nil {
-		log.Fatalf("Failed to serve gRPC server over port %s : %v", PORT, err)
+		return fmt.Errorf("failed to serve gRPC server over port %d: %s", port, err)
+	}
+
+	return
+}
+
+func main() {
+	if err := emailCmd.Execute(); err != nil {
+		log.Fatalf("error when running the email provider: %s\n", err)
+		os.Exit(1)
 	}
 }
