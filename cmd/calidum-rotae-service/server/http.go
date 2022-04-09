@@ -12,8 +12,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*http.Server, error) {
-	addr := fmt.Sprintf(":%d", viper.GetUint32(config.FlagPort))
+type HTTPServer struct {
+	server *http.Server
+	socket net.Listener
+}
+
+func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*HTTPServer, error) {
+	addr := fmt.Sprintf(":%d", v.GetUint32(config.FlagPort))
 
 	// HTTP Server configuration
 	httpServer := &http.Server{}
@@ -21,12 +26,19 @@ func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*http.Server,
 	httpServer.Handler = initHTTPServerHandler(ctx)
 
 	// Make sure socket can be opened
-	_, err := net.Listen("tcp", addr)
+	socket, err := net.Listen("tcp", addr)
 	if err != nil {
 		return nil, fmt.Errorf("error opening socket on address %s: %s", addr, err)
 	}
 
-	return httpServer, nil
+	return &HTTPServer{
+		server: httpServer,
+		socket: socket,
+	}, nil
+}
+
+func (s HTTPServer) Serve() error {
+	return s.server.Serve(s.socket)
 }
 
 func initHTTPServerHandler(ctx context.Context) *gin.Engine {

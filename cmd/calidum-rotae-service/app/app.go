@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/client"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/server"
@@ -20,10 +19,10 @@ type CalidumRotaeService struct {
 	emailProdiver email_provider.EmailProviderClient
 
 	// HTTP server - our REST API
-	httpServer *http.Server
+	httpServer *server.HTTPServer
 }
 
-func Run(ctx context.Context, v *viper.Viper) (service *CalidumRotaeService, err error) {
+func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeService, err error) {
 	// Create new instance of the service
 	service = &CalidumRotaeService{}
 
@@ -40,4 +39,8 @@ func Run(ctx context.Context, v *viper.Viper) (service *CalidumRotaeService, err
 	}
 
 	return
+}
+
+func (c *CalidumRotaeService) Run(ctx context.Context) error {
+	return c.httpServer.Serve()
 }

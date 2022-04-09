@@ -38,9 +38,15 @@ func runService(cmd *cobra.Command, args []string) error {
 	})
 	ctx := context.WithValue(cmd.Context(), logger.CtxKey, ctxLogger)
 
-	// Start the microservice service and its dependencies.
-	if _, err := app.Run(ctx, v); err != nil {
+	// Initialize the service and its dependencies
+	service, err := app.InitFromViper(ctx, v)
+	if err != nil {
 		return fmt.Errorf("error when initializing calidum rotae service: %s", err)
+	}
+
+	// Start the microservice service and its dependencies.
+	if err := service.Run(ctx); err != nil {
+		return fmt.Errorf("error when running calidum rotae: %s", err)
 	}
 
 	return nil
