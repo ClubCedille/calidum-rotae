@@ -12,21 +12,23 @@ import (
 )
 
 func InitFromViper(ctx context.Context, v *viper.Viper) (
-	discord_provider.DiscordProviderClient,
-	email_provider.EmailProviderClient,
-	error,
+	discordClient discord_provider.DiscordProviderClient,
+	emailClient email_provider.EmailProviderClient,
+	err error,
 ) {
-	discordClient, err := initDiscordProviderClient(ctx, v)
+	discordClient, err = initDiscordProviderClient(ctx, v)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error when initializing discord provider client: %s", err)
+		err = fmt.Errorf("error when initializing discord provider client: %s", err)
+		return
 	}
 
-	emailClient, err := initEmailProviderClient(ctx, v)
+	emailClient, err = initEmailProviderClient(ctx, v)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error when initializing email provider client: %s", err)
+		err = fmt.Errorf("error when initializing email provider client: %s", err)
+		return
 	}
 
-	return discordClient, emailClient, nil
+	return
 }
 
 func initDiscordProviderClient(ctx context.Context, v *viper.Viper) (client discord_provider.DiscordProviderClient, err error) {
