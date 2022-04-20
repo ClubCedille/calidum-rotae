@@ -55,6 +55,5 @@ func runService(cmd *cobra.Command, args []string) error {
 func main() {
 	if err := serviceCmd.Execute(); err != nil {
 		log.Fatalf("error when running the calidum rotae service: %s\n", err)
-		os.Exit(1)
 	}
 }
