@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/app"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
@@ -45,7 +44,10 @@ func runService(cmd *cobra.Command, args []string) error {
 	}
 
 	// Start the microservice service and its dependencies.
-	if err := service.Run(ctx); err != nil {
+	if err := service.Run(
+		ctx,
+		int32(v.GetUint32(config.FlagPort)),
+	); err != nil {
 		return fmt.Errorf("error when running calidum rotae: %s", err)
 	}
 

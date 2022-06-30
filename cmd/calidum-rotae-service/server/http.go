@@ -7,15 +7,12 @@ import (
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
 	"github.com/clubcedille/logger"
+	serverutils "github.com/clubcedille/server-utils"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
-type HTTPServer struct {
-	server *http.Server
-}
-
-func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*HTTPServer, error) {
+func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*serverutils.HttpServer, error) {
 	addr := fmt.Sprintf(":%d", v.GetUint32(config.FlagPort))
 
 	// HTTP Server configuration
@@ -23,11 +20,7 @@ func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper) (*HTTPServer, 
 	httpServer.Addr = addr
 	httpServer.Handler = initHTTPServerHandler(ctx)
 
-	return &HTTPServer{httpServer}, nil
-}
-
-func (s HTTPServer) Serve() error {
-	return s.server.ListenAndServe()
+	return serverutils.NewHttpServer(httpServer), nil
 }
 
 func initHTTPServerHandler(ctx context.Context) *gin.Engine {
