@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/discord-provider/config"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/discord-provider/server"
+	"github.com/clubcedille/logger"
+	serverutils "github.com/clubcedille/server-utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,22 +36,23 @@ func runDiscordProvider(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("error when binding flags: %s", err)
 	}
 
-	// TODO: Maybe use this ctx in the future.
-	// ctxLogger := logger.Initialize(logger.Config{
-	// 	Level: v.GetString(config.FlagLogLevel),
-	// })
-	// ctx := context.WithValue(cmd.Context(), logger.CtxKey, ctxLogger)
+	// Initialize context instance with logger
+	ctxLogger := logger.Initialize(logger.Config{
+		Level: v.GetString(config.FlagLogLevel),
+	})
+	ctx := context.WithValue(cmd.Context(), logger.CtxKey, ctxLogger)
 
+	// Initialize server
 	v.AutomaticEnv()
 	port := v.GetUint32(config.FlagPort)
-	lt, err := net.Listen("tcp", fmt.Sprintf(":%d", v.GetUint32(config.FlagPort)))
-	if err != nil {
-		return fmt.Errorf("error starting tcp listener on port %d: %s", port, err)
-	}
-
 	server := server.NewServer()
 	grpcServer := server.ConfigureGrpc()
-	if err := grpcServer.Serve(lt); err != nil {
+	grpcServerInstance := serverutils.NewGrpcServer(grpcServer)
+
+	if err := grpcServerInstance.Run(ctx, serverutils.RunRequest{
+		Port:              int32(port),
+		ShutdownTimeoutMs: 10000, // 10 seconds
+	}); err != nil {
 		return fmt.Errorf("failed to serve gRPC server over port %d: %s", port, err)
 	}
 

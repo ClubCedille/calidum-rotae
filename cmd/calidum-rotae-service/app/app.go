@@ -8,6 +8,7 @@ import (
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/server"
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
+	serverutils "github.com/clubcedille/server-utils"
 	"github.com/spf13/viper"
 )
 
@@ -19,7 +20,7 @@ type CalidumRotaeService struct {
 	emailProvider email_provider.EmailProviderClient
 
 	// HTTP server - our REST API
-	httpServer *server.HTTPServer
+	httpServer serverutils.Server
 }
 
 func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeService, err error) {
@@ -41,6 +42,9 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeSe
 	return
 }
 
-func (c *CalidumRotaeService) Run(ctx context.Context) error {
-	return c.httpServer.Serve()
+func (c *CalidumRotaeService) Run(ctx context.Context, port int32) error {
+	return c.httpServer.Run(ctx, serverutils.RunRequest{
+		Port:              port,
+		ShutdownTimeoutMs: 10000, // 10 seconds
+	})
 }
