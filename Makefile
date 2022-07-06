@@ -22,14 +22,5 @@ grpc: 	## Generate gRPC files
 ##########################################
 ####### Docker related commands ##########
 ##########################################
-define docker_build
-	docker build clubcedille/$(1) -t cmd/$(1)
-endef
-
-docker-build:
-	$(call docker_build,calidum-rotae-service)
-	$(call docker_build,email-provider)
-	$(call docker_build,discord-provider)	
-
 docker-compose:
 	@docker-compose up --build
