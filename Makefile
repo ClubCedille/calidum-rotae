@@ -18,3 +18,18 @@ grpc: 	## Generate gRPC files
 	$(call grpc_template,./pkg/proto-gen/provider,api/provider.proto)
 	$(call grpc_template,./pkg/proto-gen/email-provider,api/email_provider.proto)
 	$(call grpc_template,./pkg/proto-gen/discord-provider,api/discord_provider.proto)
+
+##########################################
+####### Docker related commands ##########
+##########################################
+define docker_build
+	docker build clubcedille/$(1) -t cmd/$(1)
+endef
+
+docker-build:
+	$(call docker_build,calidum-rotae-service)
+	$(call docker_build,email-provider)
+	$(call docker_build,discord-provider)	
+
+docker-compose:
+	@docker-compose up --build
