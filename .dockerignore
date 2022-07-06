@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+
+.git
+.gitattributes
+.gitignore
+
+docker-compose.yml
+Dockerfile
