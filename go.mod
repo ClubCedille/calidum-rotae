@@ -3,18 +3,18 @@ module github.com/clubcedille/calidum-rotae-backend
 go 1.18
 
 require (
-	github.com/spf13/cobra v1.4.0
+	github.com/clubcedille/logger v1.0.8
+	github.com/clubcedille/server-utils v1.0.0
+	github.com/gin-gonic/gin v1.8.1
+	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.10.1
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
 
 require (
-	github.com/clubcedille/logger v1.0.8 // indirect
-	github.com/clubcedille/server-utils v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
