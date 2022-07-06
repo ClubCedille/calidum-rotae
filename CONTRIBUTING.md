@@ -25,3 +25,12 @@ To generate the gRPC Go files from the Protobuf spec, run this command:
 ```bash
 $ make grpc
 ```
+
+## Local development
+
+To run the project locally using `docker-compose`, simply run this command:
+```bash
+$ make docker-compose
+```
+
+The API will then be available on port 3000.
