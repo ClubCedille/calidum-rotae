@@ -18,3 +18,9 @@ grpc: 	## Generate gRPC files
 	$(call grpc_template,./pkg/proto-gen/provider,api/provider.proto)
 	$(call grpc_template,./pkg/proto-gen/email-provider,api/email_provider.proto)
 	$(call grpc_template,./pkg/proto-gen/discord-provider,api/discord_provider.proto)
+
+##########################################
+####### Docker related commands ##########
+##########################################
+docker-compose:
+	@docker-compose up --build
