@@ -1,0 +1,13 @@
+output   = "pkg/database/models"
+wipe     = true
+no-tests = true
+
+[psql]
+dbname = "calidum_rotae"
+host   = "localhost"
+port   = 5432
+user   = "cedille_user"
+pass   = "cedille_pwd"
+schema = "calidum_rotae"
+sslmode = "disable"
+blacklist = ["migrations"]
