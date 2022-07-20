@@ -27,3 +27,9 @@ sqlboiler:
 
 sql-migrate:
 	@sql-migrate up
+	
+##########################################
+####### Docker related commands ##########
+##########################################
+docker-compose:
+	@docker-compose up --build

@@ -13,6 +13,62 @@ services:
       - postgres:/var/lib/postgresql/data
       - ./scripts/postgres/:/docker-entrypoint-initdb.d/
 
+  email_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/email-provider/Dockerfile
+    container_name: email_provider
+    ports:
+      - 4000:4000
+    expose:
+      - 4000
+    networks:
+      - microservices
+    entrypoint: [
+      "/email_provider",
+      "--port", "4000", 
+    ]
+
+  discord_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/discord-provider/Dockerfile
+    container_name: discord_provider
+    ports:
+      - 5000:5000
+    expose:
+      - 5000
+    networks:
+      - microservices
+    entrypoint: [
+      "/discord_provider",
+      "--port", "5000", 
+    ]
+
+  calidum_rotae_service:
+    build:
+      context: .
+      dockerfile: ./cmd/calidum-rotae-service/Dockerfile
+    container_name: calidum_rotae_service
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    networks:
+      - microservices
+    depends_on:
+      - email_provider
+      - discord_provider
+    entrypoint: [
+      "/calidum_rotae_service",
+      "--port", "3000", 
+      "--email_provider_port", "4000",
+      "--discord_provider_port", "5000"
+    ]
+    
+networks:
+  microservices:
+
 volumes:
   postgres:
     driver: local
