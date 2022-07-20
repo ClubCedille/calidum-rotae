@@ -7,6 +7,7 @@ require (
 	github.com/clubcedille/server-utils v1.0.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/lib/pq v1.10.6
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/volatiletech/null/v8 v8.1.2
@@ -29,7 +30,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lib/pq v1.10.6 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
