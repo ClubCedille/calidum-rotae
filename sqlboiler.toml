@@ -8,6 +8,5 @@ host   = "localhost"
 port   = 5432
 user   = "cedille_user"
 pass   = "cedille_pwd"
-schema = "calidum_rotae"
 sslmode = "disable"
-blacklist = ["migrations"]
+blacklist = ["gorp_migrations"]
