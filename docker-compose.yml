@@ -59,11 +59,15 @@ services:
     depends_on:
       - email_provider
       - discord_provider
+    environment:
+      DB_PASSWORD: cedille_pwd
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000", 
       "--email_provider_port", "4000",
-      "--discord_provider_port", "5000"
+      "--discord_provider_port", "5000",
+      "--db-user", "cedille_user",
+      "--db-name", "calidum_rotae"
     ]
     
 networks:
