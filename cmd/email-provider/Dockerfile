@@ -18,6 +18,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 RUN addgroup -S cedille-group && \
     adduser -S cedille-user -G cedille-group
 
+ENV FROM_EMAIL_ADDRESS=$FROM_EMAIL_ADDRESS
+ENV FROM_NAME=$FROM_NAME
+ENV TO_NAME=$TO_NAME
+ENV TO_EMAIL_ADDRESS=$TO_EMAIL_ADDRESS
+ENV SENDGRID_API_KEY=$SENDGRID_API_KEY
+ENV SUBJECT=$SUBJECT
+
 # Step 2 - import necessary files to run program.
 FROM scratch
 
