@@ -21,17 +21,17 @@ func NewServer() *Server {
 
 func (server *Server) SendMessage(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
 	m := mail.NewV3Mail()
-	address := os.Getenv("FROM_EMAIL_ADDRESS")
-	name := os.Getenv("FROM_NAME")
+	address := os.Getenv("EMAIL_FROM_ADDRESS")
+	name := os.Getenv("EMAIL_FROM_NAME")
 	e := mail.NewEmail(name, address)
 	m.SetFrom(e)
 
 	p := mail.NewPersonalization()
 	tos := []*mail.Email{
-		mail.NewEmail(os.Getenv("TO_NAME"), os.Getenv("TO_EMAIL_ADDRESS")),
+		mail.NewEmail(os.Getenv("EMAIL_NAME_TO"), os.Getenv("EMAIL_TO_ADDRESS")),
 	}
 	p.AddTos(tos...)
-	p.Subject = os.Getenv("SUBJECT")
+	p.Subject = os.Getenv("EMAIL_SUBJECT")
 	m.AddPersonalizations(p)
 
 	htmlContent := fmt.Sprintf(
@@ -68,10 +68,10 @@ func (server *Server) SendMessage(ctx context.Context, message *email_provider.S
 	mailSettings.SetSpamCheckSettings(spamCheckSetting)
 	m.SetMailSettings(mailSettings)
 
-	replyToEmail := mail.NewEmail(os.Getenv("FROM_NAME"), os.Getenv("FROM_EMAIL_ADDRESS"))
+	replyToEmail := mail.NewEmail(os.Getenv("EMAIL_FROM_NAME"), os.Getenv("EMAIL_FROM_ADDRESS"))
 	m.SetReplyTo(replyToEmail)
 
-	request := sendgrid.GetRequest(os.Getenv("SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
+	request := sendgrid.GetRequest(os.Getenv("EMAIL_SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
 	request.Method = "POST"
 	var Body = mail.GetRequestBody(m)
 	request.Body = Body
