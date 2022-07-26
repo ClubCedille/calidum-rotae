@@ -1,6 +1,18 @@
 version: '3'
 
 services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=cedille_user
+      - POSTGRES_PASSWORD=cedille_pwd
+    ports:
+      - '5432:5432'
+    volumes: 
+      - postgres:/var/lib/postgresql/data
+      - ./scripts/postgres/:/docker-entrypoint-initdb.d/
+
   email_provider:
     build:
       context: .
@@ -47,12 +59,20 @@ services:
     depends_on:
       - email_provider
       - discord_provider
+    environment:
+      DB_PASSWORD: cedille_pwd
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000", 
       "--email_provider_port", "4000",
-      "--discord_provider_port", "5000"
+      "--discord_provider_port", "5000",
+      "--db-user", "cedille_user",
+      "--db-name", "calidum_rotae"
     ]
     
 networks:
   microservices:
+
+volumes:
+  postgres:
+    driver: local
