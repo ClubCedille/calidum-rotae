@@ -12,7 +12,11 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-require github.com/sendgrid/rest v2.6.9+incompatible // indirect
+require (
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
+	golang.org/x/tools v0.1.11 // indirect
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
