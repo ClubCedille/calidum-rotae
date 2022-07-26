@@ -21,17 +21,35 @@ func NewServer() *Server {
 
 func (server *Server) SendMessage(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
 	m := mail.NewV3Mail()
-	address := os.Getenv("EMAIL_FROM_ADDRESS")
-	name := os.Getenv("EMAIL_FROM_NAME")
-	e := mail.NewEmail(name, address)
+	emailFromAddress, exists := os.LookupEnv("EMAIL_FROM_ADDRESS")
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_FROM_ADDRESS is not set to a value")
+	}
+
+	emailFromName, exists := os.LookupEnv("EMAIL_FROM_NAME")
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_FROM_NAME is not set to a value")
+	}
+	e := mail.NewEmail(emailFromName, emailFromAddress)
 	m.SetFrom(e)
+
+	emailNameTo, exists := os.LookupEnv("EMAIL_NAME_TO")
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_NAME_TO is not set to a value")
+	}
+
+	emailAddressTo, exists := os.LookupEnv("EMAIL_TO_ADDRESS")
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_TO_ADDRESS is not set to a value")
+	}
 
 	p := mail.NewPersonalization()
 	tos := []*mail.Email{
-		mail.NewEmail(os.Getenv("EMAIL_NAME_TO"), os.Getenv("EMAIL_TO_ADDRESS")),
+		// TODO Send email to more addresses
+		mail.NewEmail(emailNameTo, emailAddressTo),
 	}
 	p.AddTos(tos...)
-	p.Subject = os.Getenv("EMAIL_SUBJECT")
+	p.Subject = os.Getenv("EMAIL_SUBJECT") // EMAIL_SUBJECT can be null
 	m.AddPersonalizations(p)
 
 	htmlContent := fmt.Sprintf(
@@ -43,7 +61,8 @@ func (server *Server) SendMessage(ctx context.Context, message *email_provider.S
 		 <strong> Request details: </strong> %s <br> 
 		 <strong> Request service: </strong> %s
 		`,
-		message.Sender.FirstName, message.Sender.LastName, message.Sender.Email, message.Sender.PhoneNumber, message.RequestDetails, message.RequestService)
+		message.Sender.FirstName, message.Sender.LastName, message.Sender.Email,
+		message.Sender.PhoneNumber, message.RequestDetails, message.RequestService)
 	c := mail.NewContent("text/html", htmlContent)
 	m.AddContent(c)
 
@@ -68,22 +87,22 @@ func (server *Server) SendMessage(ctx context.Context, message *email_provider.S
 	mailSettings.SetSpamCheckSettings(spamCheckSetting)
 	m.SetMailSettings(mailSettings)
 
-	replyToEmail := mail.NewEmail(os.Getenv("EMAIL_FROM_NAME"), os.Getenv("EMAIL_FROM_ADDRESS"))
+	replyToEmail := mail.NewEmail(emailFromName, emailFromAddress)
 	m.SetReplyTo(replyToEmail)
 
-	request := sendgrid.GetRequest(os.Getenv("EMAIL_SENDGRID_API_KEY"), "/v3/mail/send", "https://api.sendgrid.com")
+	emailSendgridApiKey, exists := os.LookupEnv("EMAIL_SENDGRID_API_KEY")
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_SENDGRID_API_KEY is not set to a value")
+	}
+	request := sendgrid.GetRequest(emailSendgridApiKey, "/v3/mail/send", "https://api.sendgrid.com")
 	request.Method = "POST"
 	var Body = mail.GetRequestBody(m)
 	request.Body = Body
 	response, err := sendgrid.API(request)
 	if err != nil {
-		log.Println(err.Error())
-	} else {
-		log.Println(response.StatusCode)
-		log.Println(response.Body)
-		log.Println(response.Headers)
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("failed to send email: %s", err)
 	}
 
-	log.Printf("Received message content from client: %s", message.Sender)
+	log.Printf("Email sent: %s", response.Body)
 	return &email_provider.SendEmailResponse{}, nil
 }
