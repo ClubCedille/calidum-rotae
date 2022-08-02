@@ -1,6 +1,6 @@
 module github.com/clubcedille/calidum-rotae-backend
 
-go 1.18
+go 1.19
 
 require (
 	github.com/clubcedille/logger v1.0.8
