@@ -31,18 +31,14 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 	discordPhone := fmt.Sprintf("**Phone:** %s", message.Sender.PhoneNumber)
 	discordRequestDetails := fmt.Sprintf("**Request details:** %s", message.RequestDetails)
 	discordRequestServices := fmt.Sprintf("**Request services:** %s", message.RequestService)
-	discordEmbedded := Embedded{
-		Title:       "New submission",
-		Description: fmt.Sprintf("%s\n%s\n%s\n\n%s\n%s", discordName, discordEmail, discordPhone, discordRequestDetails, discordRequestServices),
-		Color:       "16745728", // orange
-		Footer: Footer{
-			Text: "By calidum-rotae services",
-		},
-	}
-
 	discordMessage := Message{
-		Username:  "calidum-rotae",
-		Embeddeds: []Embedded{discordEmbedded},
+		Username: "calidum-rotae",
+		Embeddeds: []Embedded{{Title: "New submission",
+			Description: fmt.Sprintf("%s\n%s\n%s\n\n%s\n%s", discordName, discordEmail, discordPhone, discordRequestDetails, discordRequestServices),
+			Color:       "16745728", // orange
+			Footer: Footer{
+				Text: "By calidum-rotae services",
+			}}},
 	}
 
 	payload := new(bytes.Buffer)
