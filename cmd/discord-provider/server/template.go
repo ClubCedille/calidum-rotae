@@ -1,6 +1,6 @@
 package server
 
-// Necessary structures for the creation of a embedded discord message
+// Necessary struct to send a embedded discord message
 type Message struct {
 	Username  string     `json:"username,omitempty"`
 	Content   string     `json:"content,omitempty"`
