@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 )
@@ -23,29 +23,38 @@ func NewServer() *Server {
 func (server *Server) SendMessage(ctx context.Context, message *discord_provider.SendMessageRequest) (*discord_provider.SendMessageResponse, error) {
 	url, found := os.LookupEnv("DISCORD_WEBHOOK_URL")
 	if !found {
-		return &discord_provider.SendMessageResponse{}, fmt.Errorf("the env var DISCORD_WEBHOOK_URL is not set to a value")
+		return &discord_provider.SendMessageResponse{}, errors.New("the env var DISCORD_WEBHOOK_URL is not set to a value")
 	}
 
-	discordName := fmt.Sprintf("**Name:** %s %s", message.Sender.FirstName, message.Sender.LastName)
-	discordEmail := fmt.Sprintf("**Email:** %s", message.Sender.Email)
-	discordPhone := fmt.Sprintf("**Phone:** %s", message.Sender.PhoneNumber)
-	discordRequestDetails := fmt.Sprintf("**Request details:** %s", message.RequestDetails)
-	discordRequestServices := fmt.Sprintf("**Request services:** %s", message.RequestService)
-	discordMessage := Message{
+	discordMessage := discordMessage{
 		Username: "calidum-rotae",
-		Embeddeds: []Embedded{{Title: "New submission",
-			Description: fmt.Sprintf("%s\n%s\n%s\n\n%s\n%s", discordName, discordEmail, discordPhone, discordRequestDetails, discordRequestServices),
-			Color:       "16745728", // orange
-			Footer: Footer{
-				Text: "By calidum-rotae services",
-			}}},
+		Embeddeds: []embedded{
+			{
+				Title: "New submission",
+				Description: discordSenderInformation{
+					firstName:      message.Sender.FirstName,
+					lastName:       message.Sender.LastName,
+					email:          message.Sender.Email,
+					phoneNumber:    message.Sender.PhoneNumber,
+					requestDetails: message.RequestDetails,
+					requestService: message.RequestService,
+				}.String(),
+				Color: "16745728", // orange
+				Footer: footer{
+					Text: "By calidum-rotae services",
+				},
+			}},
 	}
 
 	payload := new(bytes.Buffer)
-	json.NewEncoder(payload).Encode(discordMessage)
+	err := json.NewEncoder(payload).Encode(discordMessage)
+	if err != nil {
+		return &discord_provider.SendMessageResponse{}, errors.New(fmt.Sprintf("failed to encode the message %v", discordMessage))
+	}
+
 	resp, err := http.Post(url, "application/json", payload)
 	if err != nil {
-		return &discord_provider.SendMessageResponse{}, fmt.Errorf(strconv.Itoa(resp.StatusCode))
+		return &discord_provider.SendMessageResponse{}, errors.New(fmt.Sprintf("failed to send discord webhook: status code %d", resp.StatusCode))
 	}
 
 	return &discord_provider.SendMessageResponse{}, nil
