@@ -49,12 +49,12 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(discordMessage)
 	if err != nil {
-		return &discord_provider.SendMessageResponse{}, errors.New(fmt.Sprintf("failed to encode the message %v", discordMessage))
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to encode the message %v", discordMessage)
 	}
 
 	resp, err := http.Post(url, "application/json", payload)
 	if err != nil {
-		return &discord_provider.SendMessageResponse{}, errors.New(fmt.Sprintf("failed to send discord webhook: status code %d", resp.StatusCode))
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code %d", resp.StatusCode)
 	}
 
 	return &discord_provider.SendMessageResponse{}, nil
