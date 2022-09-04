@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -54,6 +55,11 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 
 	resp, err := http.Post(url, "application/json", payload)
 	if err != nil {
+		defer resp.Body.Close()
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
+		}
 		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code %d", resp.StatusCode)
 	}
 
