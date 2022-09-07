@@ -1,8 +1,14 @@
 package server
 
 import (
+	"bytes"
 	"context"
-	"log"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
 
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 )
@@ -16,8 +22,47 @@ func NewServer() *Server {
 }
 
 func (server *Server) SendMessage(ctx context.Context, message *discord_provider.SendMessageRequest) (*discord_provider.SendMessageResponse, error) {
-	// Sends a message to a Discord webhook here
+	url, found := os.LookupEnv("DISCORD_WEBHOOK_URL")
+	if !found {
+		return &discord_provider.SendMessageResponse{}, errors.New("the env var DISCORD_WEBHOOK_URL is not set to a value")
+	}
 
-	log.Printf("Received message content from client: %s", message.Sender)
+	discordMessage := discordMessage{
+		Username: "calidum-rotae",
+		Embeddeds: []embedded{
+			{
+				Title: "New submission",
+				Description: discordSenderInformation{
+					firstName:      message.Sender.FirstName,
+					lastName:       message.Sender.LastName,
+					email:          message.Sender.Email,
+					phoneNumber:    message.Sender.PhoneNumber,
+					requestDetails: message.RequestDetails,
+					requestService: message.RequestService,
+				}.String(),
+				Color: "16745728", // orange
+				Footer: footer{
+					Text: "By calidum-rotae services",
+				},
+			}},
+	}
+
+	payload := new(bytes.Buffer)
+	err := json.NewEncoder(payload).Encode(discordMessage)
+	if err != nil {
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to encode the message %v", discordMessage)
+	}
+
+	resp, err := http.Post(url, "application/json", payload)
+	if err != nil {
+		defer resp.Body.Close()
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code %d", resp.StatusCode)
+		}
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
+
+	}
+
 	return &discord_provider.SendMessageResponse{}, nil
 }
