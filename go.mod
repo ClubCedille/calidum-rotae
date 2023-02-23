@@ -17,11 +17,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-require (
-	github.com/sendgrid/rest v2.6.9+incompatible // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/tools v0.1.11 // indirect
-)
+require github.com/sendgrid/rest v2.6.9+incompatible // indirect
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -43,7 +39,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
-	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sendgrid/sendgrid-go v3.11.1+incompatible
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
@@ -55,9 +50,9 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/net v0.0.0-20220630215102-69896b714898 // indirect
-	golang.org/x/sys v0.0.0-20220702020025-31831981b65f // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/text v0.3.8 // indirect
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
 	google.golang.org/genproto v0.0.0-20220630174209-ad1d48641aa7 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
