@@ -25,6 +25,13 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /app/email_provider /email_provider
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
+ENV EMAIL_FROM_ADDRESS=$EMAIL_FROM_ADDRESS
+ENV EMAIL_FROM_NAME=$EMAIL_FROM_NAME
+ENV EMAIL_NAME_TO=$EMAIL_NAME_TO
+ENV EMAIL_TO_ADDRESS=$EMAIL_TO_ADDRESS
+ENV EMAIL_SUBJECT=$EMAIL_SUBJECT
+ENV EMAIL_SENDGRID_API_KEY=$EMAIL_SENDGRID_API_KEY
+
 USER cedille-user
 
 ENTRYPOINT ["/email_provider"]

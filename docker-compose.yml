@@ -24,6 +24,13 @@ services:
       - 4000
     networks:
       - microservices
+    environment:
+      EMAIL_FROM_ADDRESS: email_from_address
+      EMAIL_FROM_NAME: email_from_name
+      EMAIL_NAME_TO: email_to_name
+      EMAIL_TO_ADDRESS: email_to_address
+      EMAIL_SUBJECT: email_subject
+      EMAIL_SENDGRID_API_KEY: email_sendgrid_api_key
     entrypoint: [
       "/email_provider",
       "--port", "4000", 
@@ -40,6 +47,8 @@ services:
       - 5000
     networks:
       - microservices
+    environment:
+      DISCORD_WEBHOOK_URL: discord_webhook
     entrypoint: [
       "/discord_provider",
       "--port", "5000", 
@@ -61,11 +70,12 @@ services:
       - discord_provider
     environment:
       DB_PASSWORD: cedille_pwd
+      CALIDUM_ROTAE_SERVICE_API_KEY: 1234
     entrypoint: [
       "/calidum_rotae_service",
-      "--port", "3000", 
-      "--email_provider_port", "4000",
+      "--port", "3000",
       "--discord_provider_port", "5000",
+      "--email_provider_port", "4000",
       "--db-user", "cedille_user",
       "--db-name", "calidum_rotae"
     ]

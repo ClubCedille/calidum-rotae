@@ -53,7 +53,7 @@ func runEmailProvider(cmd *cobra.Command, args []string) (err error) {
 		Port:              int32(port),
 		ShutdownTimeoutMs: 10000, // 10 seconds
 	}); err != nil {
-		return fmt.Errorf("failed to serve gRPC server over port %d: %s", port, err)
+		return fmt.Errorf("error serving gRPC server over port %d: %s", port, err)
 	}
 
 	return

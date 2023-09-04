@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -15,6 +14,10 @@ import (
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
 	serverutils "github.com/clubcedille/server-utils"
 	"github.com/spf13/viper"
+)
+
+const (
+	ENV_DB_PASSWORD = "DB_PASSWORD"
 )
 
 type CalidumRotaeService struct {
@@ -41,25 +44,25 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeSe
 		return nil, fmt.Errorf("error when initializing client providers: %s", err)
 	}
 
-	// Create instance of the HTTP server
-	service.httpServer, err = server.InitHTTPServerFromViper(ctx, v)
-	if err != nil {
-		return nil, fmt.Errorf("error when initializing the HTTP server: %s", err)
-	}
-
 	// Initialize calidum rotae service
 	service.calidumService, err = service.initService(ctx, v)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize calidum rotae service: %s", err)
+		return nil, fmt.Errorf("error initializing calidum rotae service: %s", err)
+	}
+
+	// Create instance of the HTTP server
+	service.httpServer, err = server.InitHTTPServerFromViper(ctx, v, service.calidumService)
+	if err != nil {
+		return nil, fmt.Errorf("error when initializing the HTTP server: %s", err)
 	}
 
 	return
 }
 
 func (c *CalidumRotaeService) initService(ctx context.Context, v *viper.Viper) (calidumService *calidum.CalidumService, err error) {
-	dbPassword := os.Getenv("DB_PASSWORD")
+	dbPassword := os.Getenv(ENV_DB_PASSWORD)
 	if dbPassword == "" {
-		return nil, errors.New("failed to fetch the following environment variable: 'DB_PASSWORD' is not set")
+		return nil, fmt.Errorf("error getting the following environment variable: %s is not set", ENV_DB_PASSWORD)
 	}
 
 	db, err := postgres.NewPostgresClient(postgres.Config{
@@ -73,7 +76,7 @@ func (c *CalidumRotaeService) initService(ctx context.Context, v *viper.Viper) (
 		MaxOpenConn: 100,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %s", err)
+		return nil, fmt.Errorf("error connecting to database: %s", err)
 	}
 
 	// Build new calidum rotae service with its dependencies
