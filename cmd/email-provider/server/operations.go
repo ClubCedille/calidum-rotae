@@ -11,6 +11,16 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
+// environment variables
+const (
+	ENV_MAIL_FROM_ADDRESS      = "EMAIL_FROM_ADDRESS"
+	ENV_EMAIL_FROM_NAME        = "EMAIL_FROM_NAME"
+	ENV_EMAIL_NAME_TO          = "EMAIL_NAME_TO"
+	ENV_EMAIL_TO_ADDRESS       = "EMAIL_TO_ADDRESS"
+	ENV_EMAIL_SUBJECT          = "EMAIL_SUBJECT"
+	ENV_EMAIL_SENDGRID_API_KEY = "EMAIL_SENDGRID_API_KEY"
+)
+
 type Server struct {
 	email_provider.EmailProviderServer
 }
@@ -19,28 +29,28 @@ func NewServer() *Server {
 	return &Server{}
 }
 
-func (server *Server) SendMessage(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
+func (server *Server) SendEmail(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
 	m := mail.NewV3Mail()
-	emailFromAddress, exists := os.LookupEnv("EMAIL_FROM_ADDRESS")
+	emailFromAddress, exists := os.LookupEnv(ENV_MAIL_FROM_ADDRESS)
 	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_FROM_ADDRESS is not set to a value")
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_MAIL_FROM_ADDRESS)
 	}
 
-	emailFromName, exists := os.LookupEnv("EMAIL_FROM_NAME")
+	emailFromName, exists := os.LookupEnv(ENV_EMAIL_FROM_NAME)
 	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_FROM_NAME is not set to a value")
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_FROM_NAME)
 	}
 	e := mail.NewEmail(emailFromName, emailFromAddress)
 	m.SetFrom(e)
 
-	emailNameTo, exists := os.LookupEnv("EMAIL_NAME_TO")
+	emailNameTo, exists := os.LookupEnv(ENV_EMAIL_NAME_TO)
 	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_NAME_TO is not set to a value")
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_NAME_TO)
 	}
 
-	emailAddressTo, exists := os.LookupEnv("EMAIL_TO_ADDRESS")
+	emailAddressTo, exists := os.LookupEnv(ENV_EMAIL_TO_ADDRESS)
 	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_TO_ADDRESS is not set to a value")
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_TO_ADDRESS)
 	}
 
 	p := mail.NewPersonalization()
@@ -49,7 +59,7 @@ func (server *Server) SendMessage(ctx context.Context, message *email_provider.S
 		mail.NewEmail(emailNameTo, emailAddressTo),
 	}
 	p.AddTos(tos...)
-	p.Subject = os.Getenv("EMAIL_SUBJECT") // EMAIL_SUBJECT can be null
+	p.Subject = os.Getenv(ENV_EMAIL_SUBJECT) // EMAIL_SUBJECT can be null
 	m.AddPersonalizations(p)
 
 	htmlContent := fmt.Sprintf(
@@ -90,19 +100,19 @@ func (server *Server) SendMessage(ctx context.Context, message *email_provider.S
 	replyToEmail := mail.NewEmail(emailFromName, emailFromAddress)
 	m.SetReplyTo(replyToEmail)
 
-	emailSendgridApiKey, exists := os.LookupEnv("EMAIL_SENDGRID_API_KEY")
+	emailSendgridApiKey, exists := os.LookupEnv(ENV_EMAIL_SENDGRID_API_KEY)
 	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("the env var EMAIL_SENDGRID_API_KEY is not set to a value")
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_SENDGRID_API_KEY)
 	}
 	request := sendgrid.GetRequest(emailSendgridApiKey, "/v3/mail/send", "https://api.sendgrid.com")
 	request.Method = "POST"
 	var Body = mail.GetRequestBody(m)
 	request.Body = Body
-	response, err := sendgrid.API(request)
+	_, err := sendgrid.API(request)
 	if err != nil {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("failed to send email: %s", err)
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error sending email: %s", err)
 	}
 
-	log.Printf("Email sent: %s", response.Body)
+	log.Printf("Email sent")
 	return &email_provider.SendEmailResponse{}, nil
 }

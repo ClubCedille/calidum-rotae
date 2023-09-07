@@ -4,13 +4,18 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
+)
+
+// environment variables
+const (
+	ENV_DISCORD_WEBHOOK_URL = "DISCORD_WEBHOOK_URL"
 )
 
 type Server struct {
@@ -22,9 +27,9 @@ func NewServer() *Server {
 }
 
 func (server *Server) SendMessage(ctx context.Context, message *discord_provider.SendMessageRequest) (*discord_provider.SendMessageResponse, error) {
-	url, found := os.LookupEnv("DISCORD_WEBHOOK_URL")
+	url, found := os.LookupEnv(ENV_DISCORD_WEBHOOK_URL)
 	if !found {
-		return &discord_provider.SendMessageResponse{}, errors.New("the env var DISCORD_WEBHOOK_URL is not set to a value")
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("error getting env var %s", ENV_DISCORD_WEBHOOK_URL)
 	}
 
 	discordMessage := discordMessage{
@@ -50,7 +55,7 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(discordMessage)
 	if err != nil {
-		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to encode the message %v", discordMessage)
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("error encoding the message %v", discordMessage)
 	}
 
 	resp, err := http.Post(url, "application/json", payload)
@@ -58,11 +63,12 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 		defer resp.Body.Close()
 		respBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code %d", resp.StatusCode)
+			return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: status code %d", resp.StatusCode)
 		}
-		return &discord_provider.SendMessageResponse{}, fmt.Errorf("failed to send discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
+		return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
 
 	}
 
+	log.Printf("Discord message sent")
 	return &discord_provider.SendMessageResponse{}, nil
 }

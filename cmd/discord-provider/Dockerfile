@@ -25,6 +25,8 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /app/discord_provider /discord_provider
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
+ENV DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL
+
 USER cedille-user
 
 ENTRYPOINT ["/discord_provider"]

@@ -34,3 +34,22 @@ $ make docker-compose
 ```
 
 The API will then be available on port 3000.
+
+## Testing the API
+To test the API, run this command:
+```bash
+curl -X POST \
+  http://localhost:3000/ \
+  -H 'X-API-KEY: 1234' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "Sender": {
+    "FirstName": "firtname",
+    "LastName": "lastname",
+    "Email": "email@email.com",
+    "PhoneNumber": "111-111-1111"
+  },
+  "RequestService": "service",
+  "RequestDetails": "details"
+}'
+```

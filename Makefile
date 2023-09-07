@@ -4,8 +4,8 @@ help:  	## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
 setup: 	## Setup command
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.1
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 	go install github.com/volatiletech/sqlboiler/v4@latest
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
 	go install github.com/rubenv/sql-migrate/...@latest
@@ -32,4 +32,4 @@ sql-migrate:
 ####### Docker related commands ##########
 ##########################################
 docker-compose:
-	@docker-compose up --build
+	@docker-compose build --no-cache && docker-compose up
