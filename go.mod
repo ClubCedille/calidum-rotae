@@ -11,6 +11,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/volatiletech/null/v8 v8.1.2
+	github.com/volatiletech/null/v9 v9.0.0
 	github.com/volatiletech/sqlboiler/v4 v4.11.0
 	github.com/volatiletech/strmangle v0.0.5
 	google.golang.org/grpc v1.53.0
