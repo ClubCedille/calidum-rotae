@@ -67,12 +67,11 @@ func (server *Server) SendEmail(ctx context.Context, message *email_provider.Sen
 		 <strong> First name: </strong> %s <br> 
 		 <strong> Last name: </strong> %s <br>
 		 <strong> Email: </strong> %s <br> 
-		 <strong> Phone: </strong> %s <br><br> 
 		 <strong> Request details: </strong> %s <br> 
 		 <strong> Request service: </strong> %s
 		`,
 		message.Sender.FirstName, message.Sender.LastName, message.Sender.Email,
-		message.Sender.PhoneNumber, message.RequestDetails, message.RequestService)
+		message.RequestDetails, message.RequestService)
 	c := mail.NewContent("text/html", htmlContent)
 	m.AddContent(c)
 

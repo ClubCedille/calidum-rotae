@@ -8,5 +8,4 @@ message Requester {
 	string FirstName = 1;
 	string LastName = 2;
 	string Email = 3;
-	string PhoneNumber = 4;
 }

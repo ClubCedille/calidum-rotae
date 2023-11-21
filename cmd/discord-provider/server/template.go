@@ -24,16 +24,24 @@ type discordSenderInformation struct {
 	firstName      string
 	lastName       string
 	email          string
-	phoneNumber    string
 	requestDetails string
 	requestService string
 }
 
-func (senderInformation discordSenderInformation) String() string {
-	discordName := fmt.Sprintf("**Name:** %s %s", senderInformation.firstName, senderInformation.lastName)
-	discordEmail := fmt.Sprintf("**Email:** %s", senderInformation.email)
-	discordPhone := fmt.Sprintf("**Phone:** %s", senderInformation.phoneNumber)
-	discordRequestDetails := fmt.Sprintf("**Request details:** %s", senderInformation.requestDetails)
-	discordRequestServices := fmt.Sprintf("**Request services:** %s", senderInformation.requestService)
-	return fmt.Sprintf("%s\n%s\n%s\n\n%s\n%s", discordName, discordEmail, discordPhone, discordRequestDetails, discordRequestServices)
+// func (senderInformation discordSenderInformation) String() string {
+// 	discordName := fmt.Sprintf("**Name:** %s %s", senderInformation.firstName, senderInformation.lastName)
+// 	discordEmail := fmt.Sprintf("**Email:** %s", senderInformation.email)
+// 	discordRequestDetails := fmt.Sprintf("**Request details:** %s", senderInformation.requestDetails)
+// 	discordRequestServices := fmt.Sprintf("**Request services:** %s", senderInformation.requestService)
+// 	return fmt.Sprintf("%s\n%s\n%s\n\n%s\n%s", discordName, discordEmail, discordRequestDetails, discordRequestServices)
+// }
+
+func (si discordSenderInformation) String() string {
+	return fmt.Sprintf("**Name:** %s %s\n**Email:** %s\n**Request Service:** %s\n**Request Details:** %s",
+		si.firstName,
+		si.lastName,
+		si.email,
+		si.requestService,
+		si.requestDetails,
+	)
 }

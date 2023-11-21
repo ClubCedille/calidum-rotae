@@ -41,7 +41,6 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 					firstName:      message.Sender.FirstName,
 					lastName:       message.Sender.LastName,
 					email:          message.Sender.Email,
-					phoneNumber:    message.Sender.PhoneNumber,
 					requestDetails: message.RequestDetails,
 					requestService: message.RequestService,
 				}.String(),
