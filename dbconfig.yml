@@ -1,5 +1,0 @@
-development:
-  dialect: postgres
-  datasource: dbname=calidum_rotae host=localhost port=5432 user=sqlmigrator password=some_hard_password sslmode=disable
-  dir: scripts/migrations
-  schema: calidum_rotae
