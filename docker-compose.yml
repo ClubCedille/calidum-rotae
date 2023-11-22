@@ -57,13 +57,13 @@ services:
       - email_provider
       - discord_provider
     environment:
-      DB_PASSWORD: cedille_pwd
       CALIDUM_ROTAE_SERVICE_API_KEY: 1234
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000",
       "--discord_provider_port", "5000",
-      "--email_provider_port", "4000"
+      "--email_provider_port", "4000",
+      "--enable_otel_tracing", "true",
     ]
     
 networks:
