@@ -37,7 +37,6 @@ func initHTTPServerHandler(ctx context.Context, services calidum.CalidumClient) 
 	// Middlewares configuration
 	g.Use(logger.HTTPLoggerMiddleware(ctxLogger))
 
-	// TODO: Database http request
 	g.POST("/", func(g *gin.Context) { defaultPostRequest(g, services) })
 	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services) })
 	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services) })
