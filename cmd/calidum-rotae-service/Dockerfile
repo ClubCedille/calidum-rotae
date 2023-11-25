@@ -25,7 +25,6 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /app/calidum_rotae_service /calidum_rotae_service
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENV DB_PASSWORD=$DB_PASSWORD
 ENV CALIDUM_ROTAE_SERVICE_API_KEY=$CALIDUM_ROTAE_SERVICE_API_KEY
 
 # Keep this value empty if you don't want to use TLS when dialing the microservices.

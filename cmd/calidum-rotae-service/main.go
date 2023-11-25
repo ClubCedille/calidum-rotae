@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/app"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
+	instrumentation "github.com/clubcedille/calidum-rotae-backend/cmd/otel-instrumentation"
 	"github.com/clubcedille/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,6 +43,16 @@ func runService(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("error when initializing calidum rotae service: %s", err)
 	}
+
+	// Setup OpenTelemetry
+	otlpHost := v.GetString(config.FlagOTELOtlpExporterHost)
+	otlpPort := v.GetString(config.FlagOTELOtlpExporterPort)
+	tp, err := instrumentation.SetupOpenTelemetry(ctx, otlpHost, otlpPort)
+	if err != nil {
+		log.Fatalf("error when setting up OpenTelemetry: %s\n", err)
+	}
+
+	defer func() { _ = tp.Shutdown(ctx) }()
 
 	// Start the microservice service and its dependencies.
 	if err := service.Run(
