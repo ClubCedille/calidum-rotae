@@ -1,13 +1,6 @@
 version: '3'
 
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "6831:6831/udp"
-      - "16686:16686"
-      - "14268:14268"
-      
   email_provider:
     build:
       context: .
@@ -25,7 +18,7 @@ services:
       EMAIL_NAME_TO: email_to_name
       EMAIL_TO_ADDRESS: email_to_address
       EMAIL_SUBJECT: email_subject
-      EMAIL_SENDGRID_API_KEY: email_sendgrid_api_key
+      EMAIL_SENDGRID_API_KEY: ${EMAIL_SENDGRID_API_KEY}
     entrypoint: [
       "/email_provider",
       "--port", "4000", 
@@ -43,7 +36,7 @@ services:
     networks:
       - microservices
     environment:
-      DISCORD_WEBHOOK_URL: discord_webhook
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
     entrypoint: [
       "/discord_provider",
       "--port", "5000", 
@@ -64,7 +57,7 @@ services:
       - email_provider
       - discord_provider
     environment:
-      CALIDUM_ROTAE_SERVICE_API_KEY: 1234
+      CALIDUM_ROTAE_SERVICE_API_KEY: ${CALIDUM_ROTAE_SERVICE_API_KEY}
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000",

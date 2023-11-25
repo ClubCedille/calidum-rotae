@@ -20,7 +20,7 @@ const (
 	DISCORD_SERVICE          = "discord-service"
 	DISCORD_PROVIDER_SERVICE = "discord-provider-service"
 	EMAIL_PROVIDER_SERVICE   = "email-provider-service"
-	CALIDUM_ROTAE_SERVICE    = "calidum-rotate-service"
+	CALIDUM_ROTAE_SERVICE    = "calidum-rotate-services"
 )
 
 type Tracer struct {
