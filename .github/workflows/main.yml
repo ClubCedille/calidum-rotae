@@ -1,9 +1,23 @@
 name: Build and Push Docker Images
 
+
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      image:
+        required: true
+        description: Image a build
+        type: choice
+        options:
+          - calidum-rotae-service
+          - calidum-rotae-discord-provider
+          - calidum-rotae-email-provider
+      tag:
+        required: true
+        description: Version a tag l'image
+  # push:
+  #   tags:
+  #     - 'v*.*.*-*'
 
 env:
   REGISTRY: ghcr.io/clubcedille
