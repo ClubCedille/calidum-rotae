@@ -40,14 +40,13 @@ To test the API, run this command:
 ```bash
 curl -X POST \
   http://localhost:3000/ \
-  -H 'X-API-KEY: 1234' \
+  -H 'X-API-KEY: your_calidum_rotae_service_api_key_here' \
   -H 'Content-Type: application/json' \
   -d '{
   "Sender": {
     "FirstName": "firtname",
     "LastName": "lastname",
-    "Email": "email@email.com",
-    "PhoneNumber": "111-111-1111"
+    "Email": "email@email.com"
   },
   "RequestService": "service",
   "RequestDetails": "details"
