@@ -2,6 +2,7 @@ package instrumentation
 
 import (
 	"context"
+	"fmt"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -30,8 +31,11 @@ type Tracer struct {
 }
 
 // OTLP exporter
-func newOTLPExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
-	client := otlptracehttp.NewClient()
+func newOTLPExporter(ctx context.Context, host, port string) (sdktrace.SpanExporter, error) {
+	client := otlptracehttp.NewClient(
+		otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%s", host, port)),
+		otlptracehttp.WithInsecure(),
+	)
 	return otlptrace.New(ctx, client)
 }
 
@@ -62,8 +66,8 @@ func newTracerProvider(consoleExporter, otlpExporter sdktrace.SpanExporter) (*sd
 	), nil
 }
 
-func SetupOpenTelemetry(ctx context.Context) (*sdktrace.TracerProvider, error) {
-	otlpExporter, err := newOTLPExporter(ctx)
+func SetupOpenTelemetry(ctx context.Context, host, port string) (*sdktrace.TracerProvider, error) {
+	otlpExporter, err := newOTLPExporter(ctx, host, port)
 	if err != nil {
 		return nil, err
 	}
