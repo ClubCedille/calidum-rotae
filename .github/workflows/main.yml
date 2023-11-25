@@ -1,23 +1,19 @@
 name: Build and Push Docker Images
 
-
 on:
   workflow_dispatch:
     inputs:
       image:
         required: true
-        description: Image a build
+        description: Image à construire
         type: choice
         options:
           - calidum-rotae-service
-          - calidum-rotae-discord-provider
-          - calidum-rotae-email-provider
+          - discord-provider
+          - email-provider
       tag:
         required: true
-        description: Version a tag l'image
-  # push:
-  #   tags:
-  #     - 'v*.*.*-*'
+        description: Version pour tagger l'image
 
 env:
   REGISTRY: ghcr.io/clubcedille
@@ -25,16 +21,6 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - image: calidum-rotae-service
-            context: ./cmd/calidum-rotae-service/Dockerfile
-          - image: calidum-rotae-discord-provider
-            context: ./cmd/discord-provider/Dockerfile
-          - image: calidum-rotae-email-provider
-            context: ./cmd/email-provider/Dockerfile
-    
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v4
@@ -52,26 +38,26 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache-${{ matrix.image }}
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ matrix.image }}
-          restore-keys: ${{ runner.os }}-buildx-${{ matrix.image }}
+          path: /tmp/.buildx-cache-${{ github.event.inputs.image }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.event.inputs.image }}
+          restore-keys: ${{ runner.os }}-buildx-${{ github.event.inputs.image }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.context }}/Dockerfile
+          context: ./cmd/${{ github.event.inputs.image }}
+          file: ./cmd/${{ github.event.inputs.image }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ matrix.image }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ matrix.image }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.image }}
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-${{ matrix.image }}-new
+            ${{ env.REGISTRY }}/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+            ${{ env.REGISTRY }}/${{ github.event.inputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache-${{ github.event.inputs.image }}
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-${{ github.event.inputs.image }}-new
 
       - name: Refresh Cache
         run: |
-          rm -rf /tmp/.buildx-cache-${{ matrix.image }}
-          mv /tmp/.buildx-cache-${{ matrix.image }}-new /tmp/.buildx-cache-${{ matrix.image }}
+          rm -rf /tmp/.buildx-cache-${{ github.event.inputs.image }}
+          mv /tmp/.buildx-cache-${{ github.event.inputs.image }}-new /tmp/.buildx-cache-${{ github.event.inputs.image }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
