@@ -16,7 +16,8 @@ const (
 	FlagEmailProviderPort     = "email_provider_port"
 
 	// OTEL Tracer settings
-	FlagEnableOTELTracing = "enable_otel_tracing"
+	FlagEnableOTELTracing         = "enable_otel_tracing"
+	FlagEnableOTELConsoleDebugger = "enable_otel_console_debugger"
 )
 
 func SetFlags(cmd *cobra.Command) {

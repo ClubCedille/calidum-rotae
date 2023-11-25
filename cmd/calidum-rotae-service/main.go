@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/app"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
+	instrumentation "github.com/clubcedille/calidum-rotae-backend/cmd/otel-instrumentation"
 	"github.com/clubcedille/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,6 +56,14 @@ func runService(cmd *cobra.Command, args []string) error {
 }
 
 func main() {
+	ctx := context.Background()
+	tp, err := instrumentation.SetupOpenTelemetry(ctx)
+	if err != nil {
+		log.Fatalf("error when setting up OpenTelemetry: %s\n", err)
+	}
+
+	defer func() { _ = tp.Shutdown(ctx) }()
+
 	if err := serviceCmd.Execute(); err != nil {
 		log.Fatalf("error when running the calidum rotae service: %s\n", err)
 	}

@@ -6,6 +6,12 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -14,12 +20,67 @@ const (
 	DISCORD_SERVICE          = "discord-service"
 	DISCORD_PROVIDER_SERVICE = "discord-provider-service"
 	EMAIL_PROVIDER_SERVICE   = "email-provider-service"
+	CALIDUM_ROTAE_SERVICE    = "calidum-rotate-service"
 )
 
 type Tracer struct {
 	EmailTracer   trace.Tracer
 	DiscordTracer trace.Tracer
 	Enabled       bool
+}
+
+// OTLP exporter
+func newOTLPExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
+	client := otlptracehttp.NewClient()
+	return otlptrace.New(ctx, client)
+}
+
+// Console exporter
+func newConsoleExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
+	return stdouttrace.New(
+		stdouttrace.WithPrettyPrint(),
+	)
+}
+
+func newTracerProvider(consoleExporter, otlpExporter sdktrace.SpanExporter) (*sdktrace.TracerProvider, error) {
+	r, err := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(CALIDUM_ROTAE_SERVICE),
+		),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sdktrace.NewTracerProvider(
+		sdktrace.WithSpanProcessor(sdktrace.NewSimpleSpanProcessor(consoleExporter)),
+		sdktrace.WithSpanProcessor(sdktrace.NewSimpleSpanProcessor(otlpExporter)),
+		sdktrace.WithResource(r),
+	), nil
+}
+
+func SetupOpenTelemetry(ctx context.Context) (*sdktrace.TracerProvider, error) {
+	otlpExporter, err := newOTLPExporter(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	consoleExporter, err := newConsoleExporter(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tp, err := newTracerProvider(consoleExporter, otlpExporter)
+	if err != nil {
+		return nil, err
+	}
+
+	otel.SetTracerProvider(tp)
+
+	return tp, nil
 }
 
 func (t *Tracer) StartSpanAndInitTracers(ctx context.Context, name string) (context.Context, trace.Span) {
