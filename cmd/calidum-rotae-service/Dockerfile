@@ -15,10 +15,6 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o ./calidum_rotae_service ./cmd/calidum-rotae-service/main.go
 
-# Add user & group
-RUN addgroup -S cedille-group && \
-    adduser -S cedille-user -G cedille-group
-
 # Step 2 - import necessary files to run program.
 FROM alpine
 
@@ -30,7 +26,5 @@ ENV CALIDUM_ROTAE_SERVICE_API_KEY=$CALIDUM_ROTAE_SERVICE_API_KEY
 # Keep this value empty if you don't want to use TLS when dialing the microservices.
 # Otherwise, pass the path to the certificate file.
 ENV CERTIFICATE_FILE_PATH=$CERTIFICATE_FILE_PATH
-
-USER cedille-user
 
 ENTRYPOINT ["/calidum_rotae_service"]

@@ -15,10 +15,6 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o ./discord_provider ./cmd/discord-provider/main.go
 
-# Add user & group
-RUN addgroup -S cedille-group && \
-    adduser -S cedille-user -G cedille-group
-
 # Step 2 - import necessary files to run program.
 FROM alpine
 
@@ -26,7 +22,5 @@ COPY --from=builder /app/discord_provider /discord_provider
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 ENV DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL
-
-USER cedille-user
 
 ENTRYPOINT ["/discord_provider"]
