@@ -22,8 +22,6 @@ RUN addgroup -S cedille-group && \
 # Step 2 - import necessary files to run program.
 FROM alpine
 
-COPY --from=builder /bin/sh /bin/sh
-COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /app/calidum_rotae_service /calidum_rotae_service
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
