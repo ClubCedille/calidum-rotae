@@ -15,10 +15,6 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o ./email_provider ./cmd/email-provider/main.go
 
-# Add user & group
-RUN addgroup -S cedille-group && \
-    adduser -S cedille-user -G cedille-group
-
 # Step 2 - import necessary files to run program.
 FROM alpine
 
@@ -31,7 +27,5 @@ ENV EMAIL_NAME_TO=$EMAIL_NAME_TO
 ENV EMAIL_TO_ADDRESS=$EMAIL_TO_ADDRESS
 ENV EMAIL_SUBJECT=$EMAIL_SUBJECT
 ENV EMAIL_SENDGRID_API_KEY=$EMAIL_SENDGRID_API_KEY
-
-USER cedille-user
 
 ENTRYPOINT ["/email_provider"]
