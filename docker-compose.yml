@@ -61,7 +61,9 @@ services:
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000",
+      "--discord_provider_hostname", "discord_provider",
       "--discord_provider_port", "5000",
+      "--email_provider_hostname", "email_provider",
       "--email_provider_port", "4000",
       "--enable_otel_tracing", "true",
       "--otel_otlp_exporter_host", "localhost",
