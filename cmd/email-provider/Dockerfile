@@ -20,7 +20,7 @@ RUN addgroup -S cedille-group && \
     adduser -S cedille-user -G cedille-group
 
 # Step 2 - import necessary files to run program.
-FROM scratch
+FROM alpine
 
 COPY --from=builder /bin/sh /bin/sh
 COPY --from=builder /etc/passwd /etc/passwd
