@@ -23,4 +23,7 @@ grpc: 	## Generate gRPC files
 ####### Docker related commands ##########
 ##########################################
 docker-compose:
-	@docker-compose build --no-cache && docker-compose up
+	@docker-compose up --build --no-cache
+
+docker-compose-dev:
+	@docker-compose -f docker-compose.dev.yml up --build --no-cache
