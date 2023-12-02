@@ -28,12 +28,14 @@ $ make grpc
 
 ## Local development
 
+Change the values in the ```.env``` file to your own values
+
 To run the project locally using `docker-compose`, simply run this command:
 ```bash
 $ make docker-compose-dev
 ```
 
-The command ```make docker-compose-dev``` will launch an instance of:
+This will launch an instance of:
 
 - calidum_rotae_service
 - discord_provider
