@@ -7,7 +7,7 @@ import (
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/app"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
-	instrumentation "github.com/clubcedille/calidum-rotae-backend/cmd/otel-instrumentation"
+	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/instrumentation"
 	"github.com/clubcedille/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

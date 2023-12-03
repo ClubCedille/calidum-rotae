@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -17,17 +17,14 @@ import (
 )
 
 const (
-	EMAIL_SERVICE            = "email-service"
-	DISCORD_SERVICE          = "discord-service"
-	DISCORD_PROVIDER_SERVICE = "discord-provider-service"
-	EMAIL_PROVIDER_SERVICE   = "email-provider-service"
-	CALIDUM_ROTAE_SERVICE    = "calidum-rotate-services"
+	CALIDUM_ROTAE_TRACER     = "calidum-rotae-tracer"
+	CALIDUM_ROTAE_SERVICE    = "calidum_rotae_service"
+	DISCORD_PROVIDER_SERVICE = "discord_provider"
+	EMAIL_PROVIDER_SERVICE   = "email_provider"
 )
 
-type Tracer struct {
-	EmailTracer   trace.Tracer
-	DiscordTracer trace.Tracer
-	Enabled       bool
+type Traces struct {
+	CalidumRotaeTracer trace.Tracer
 }
 
 // OTLP exporter
@@ -87,42 +84,23 @@ func SetupOpenTelemetry(ctx context.Context, host, port string) (*sdktrace.Trace
 	return tp, nil
 }
 
-func (t *Tracer) StartSpanAndInitTracers(ctx context.Context, name string) (context.Context, trace.Span) {
-	if t.Enabled {
-		if t.EmailTracer == nil {
-			t.EmailTracer = otel.Tracer(EMAIL_SERVICE)
-		}
-
-		if t.DiscordTracer == nil {
-			t.DiscordTracer = otel.Tracer(DISCORD_SERVICE)
-		}
-
-		switch name {
-		case EMAIL_PROVIDER_SERVICE:
-			return t.EmailTracer.Start(ctx, name)
-		case DISCORD_PROVIDER_SERVICE:
-			return t.DiscordTracer.Start(ctx, name)
-		}
-	}
-
-	return ctx, nil
+func (tracer *Traces) GrpcSpan(ctx context.Context, spanName, funcName, service string) (context.Context, trace.Span) {
+	return tracer.CalidumRotaeTracer.Start(ctx, spanName,
+		trace.WithAttributes(
+			attribute.String("rpc.system", "grpc"),
+			attribute.String("rpc.method", funcName),
+			attribute.String("rpc.service", service),
+		),
+	)
 }
 
-func (t *Tracer) AddErrorEvent(ctx context.Context, span trace.Span, errorMessage string) trace.Span {
-	if t.Enabled {
-		span.AddEvent("error", trace.WithAttributes(
-			attribute.String("error.message", errorMessage),
-		))
-		span.SetStatus(codes.Error, errorMessage)
-		return span
-	}
-
-	return nil
-}
-
-func (t *Tracer) EndSpan(span trace.Span, message string) {
-	if t.Enabled {
-		span.SetStatus(codes.Ok, message)
-		span.End()
-	}
+func (tracer *Traces) HttpPostSpan(ctx context.Context, g *gin.Context, spanName string) (context.Context, trace.Span) {
+	return tracer.CalidumRotaeTracer.Start(ctx, spanName,
+		trace.WithAttributes(
+			attribute.String("http.method", "POST"),
+			attribute.String("http.scheme", "http"),
+			attribute.String("http.target", g.Request.URL.Path),
+			attribute.String("http.host", g.Request.Host),
+		),
+	)
 }

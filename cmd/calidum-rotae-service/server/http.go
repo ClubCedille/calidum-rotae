@@ -8,15 +8,25 @@ import (
 	"os"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
+	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/instrumentation"
 	"github.com/clubcedille/calidum-rotae-backend/pkg/calidum"
 	"github.com/clubcedille/logger"
 	serverutils "github.com/clubcedille/server-utils"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
 	ENV_CALIDUM_ROTAE_SERVICE_API_KEY = "CALIDUM_ROTAE_SERVICE_API_KEY"
+	CALIDUM_ROTAE_TRACER_NAME         = "calidum-rotae-tracer"
+	EMAIL_POST_REQUEST                = "/email"
+	DISCORD_POST_REQUEST              = "/discord"
+	DEFAULT_POST_REQUEST              = "/"
+	DISCORD_RPC_FUNC                  = "SendDiscordRpcRequest"
+	EMAIL_RPC_FUNC                    = "SendEmailRpcRequest"
 )
 
 func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper, services calidum.CalidumClient) (*serverutils.HttpServer, error) {
@@ -37,17 +47,15 @@ func initHTTPServerHandler(ctx context.Context, services calidum.CalidumClient) 
 	// Middlewares configuration
 	g.Use(logger.HTTPLoggerMiddleware(ctxLogger))
 
-	g.POST("/", func(g *gin.Context) { defaultPostRequest(g, services) })
-	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services) })
-	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services) })
+	// Create the calidum rotae tracer
+	calidumRotaeTracer := instrumentation.Traces{}
+	calidumRotaeTracer.CalidumRotaeTracer = otel.Tracer(CALIDUM_ROTAE_TRACER_NAME)
+
+	g.POST("/", func(g *gin.Context) { defaultPostRequest(g, services, calidumRotaeTracer) })
+	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services, calidumRotaeTracer) })
+	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services, calidumRotaeTracer) })
 
 	return g
-}
-
-func authenticationIsValid(g *gin.Context) bool {
-	providedAPIKey := g.GetHeader("X-API-KEY")
-	apiKey, found := os.LookupEnv(ENV_CALIDUM_ROTAE_SERVICE_API_KEY)
-	return found && providedAPIKey == apiKey
 }
 
 func getRequestBody(g *gin.Context) ([]byte, error) {
@@ -58,62 +66,126 @@ func getRequestBody(g *gin.Context) ([]byte, error) {
 	return body, nil
 }
 
-func emailPostRequest(g *gin.Context, services calidum.CalidumClient) {
-	if !authenticationIsValid(g) {
-		g.JSON(http.StatusUnauthorized, gin.H{"error": " 401 Unauthorized"})
-		return
-	}
-
-	body, err := getRequestBody(g)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	err = services.SendEmailRpcRequest(g.Request.Context(), body)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+func authenticationIsValid(g *gin.Context) bool {
+	providedAPIKey := g.GetHeader("X-API-KEY")
+	apiKey, found := os.LookupEnv(ENV_CALIDUM_ROTAE_SERVICE_API_KEY)
+	return found && providedAPIKey == apiKey
 }
 
-func discordPostRequest(g *gin.Context, services calidum.CalidumClient) {
-	if !authenticationIsValid(g) {
-		g.JSON(http.StatusUnauthorized, gin.H{"error": " 401 Unauthorized"})
-		return
-	}
-
-	body, err := getRequestBody(g)
+func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span) {
+	ctx, emailProviderGrpcSpan := tracer.GrpcSpan(ctx, EMAIL_RPC_FUNC, EMAIL_RPC_FUNC, instrumentation.EMAIL_PROVIDER_SERVICE)
+	err := services.SendEmailRpcRequest(ctx, body)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		emailProviderGrpcSpan.RecordError(err)
+		emailProviderGrpcSpan.SetStatus(codes.Error, err.Error())
 	}
 
-	err = services.SendDiscordRpcRequest(g.Request.Context(), body)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+	return ctx, emailProviderGrpcSpan
 }
 
-// Call all microservices.
-func defaultPostRequest(g *gin.Context, services calidum.CalidumClient) {
+func sendDiscordRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span) {
+	ctx, discordGrpcSpan := tracer.GrpcSpan(ctx, DISCORD_RPC_FUNC, DISCORD_RPC_FUNC, instrumentation.DISCORD_PROVIDER_SERVICE)
+	err := services.SendDiscordRpcRequest(ctx, body)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		discordGrpcSpan.RecordError(err)
+		discordGrpcSpan.SetStatus(codes.Error, err.Error())
+	}
+
+	return ctx, discordGrpcSpan
+}
+
+// Send only an email
+func emailPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
+	ctx := g.Request.Context()
+
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, EMAIL_POST_REQUEST)
+	defer httpSpan.End()
+
 	if !authenticationIsValid(g) {
-		g.JSON(http.StatusUnauthorized, gin.H{"error": " 401 Unauthorized"})
+		g.JSON(http.StatusUnauthorized, gin.H{"error": "401 Unauthorized"})
+		unauthorizedError := fmt.Errorf("error: 401 Unauthorized")
+		httpSpan.RecordError(unauthorizedError)
+		httpSpan.SetStatus(codes.Error, unauthorizedError.Error())
 		return
 	}
 
 	body, err := getRequestBody(g)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httpSpan.RecordError(err)
+		httpSpan.SetStatus(codes.Error, err.Error())
 		return
 	}
 
-	err = services.SendDiscordRpcRequest(g.Request.Context(), body)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	ctx, emailProviderGrpcSpan := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
+	emailProviderGrpcSpan.SetStatus(codes.Ok, "Email sent")
+	emailProviderGrpcSpan.End()
+
+	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
+}
+
+// Send only a discord message
+func discordPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
+	ctx := g.Request.Context()
+
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, DISCORD_POST_REQUEST)
+	defer httpSpan.End()
+
+	if !authenticationIsValid(g) {
+		g.JSON(http.StatusUnauthorized, gin.H{"error": "401 Unauthorized"})
+		unauthorizedError := fmt.Errorf("error: 401 Unauthorized")
+		httpSpan.RecordError(unauthorizedError)
+		httpSpan.SetStatus(codes.Error, unauthorizedError.Error())
+		return
 	}
 
-	err = services.SendEmailRpcRequest(g.Request.Context(), body)
+	body, err := getRequestBody(g)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httpSpan.RecordError(err)
+		httpSpan.SetStatus(codes.Error, err.Error())
+		return
 	}
+
+	ctx, discordGrpcSpan := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
+	discordGrpcSpan.SetStatus(codes.Ok, "Discord message sent!")
+	discordGrpcSpan.End()
+
+	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
+}
+
+// Send an email and a discord message
+func defaultPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
+	ctx := g.Request.Context()
+
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, DEFAULT_POST_REQUEST)
+	defer httpSpan.End()
+
+	if !authenticationIsValid(g) {
+		g.JSON(http.StatusUnauthorized, gin.H{"error": "401 Unauthorized"})
+		unauthorizedError := fmt.Errorf("error: 401 Unauthorized")
+		httpSpan.RecordError(unauthorizedError)
+		httpSpan.SetStatus(codes.Error, unauthorizedError.Error())
+		return
+	}
+
+	body, err := getRequestBody(g)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httpSpan.RecordError(err)
+		httpSpan.SetStatus(codes.Error, err.Error())
+		return
+	}
+
+	_, discordGrpcSpan := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
+	discordGrpcSpan.SetStatus(codes.Ok, "Discord message sent!")
+	discordGrpcSpan.End()
+
+	_, emailProviderGrpcSpan := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
+	emailProviderGrpcSpan.SetStatus(codes.Ok, "Email sent")
+	emailProviderGrpcSpan.End()
+
+	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
 }

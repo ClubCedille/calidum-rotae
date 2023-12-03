@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/client"
-	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/server"
-	instrumentation "github.com/clubcedille/calidum-rotae-backend/cmd/otel-instrumentation"
 	"github.com/clubcedille/calidum-rotae-backend/pkg/calidum"
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
@@ -24,9 +22,6 @@ type CalidumRotaeService struct {
 
 	// Email provider service client
 	emailProvider email_provider.EmailProviderClient
-
-	// OTEL Tracer
-	tracers instrumentation.Tracer
 
 	// HTTP server - our REST API
 	httpServer serverutils.Server
@@ -58,14 +53,10 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeSe
 }
 
 func (c *CalidumRotaeService) initService(ctx context.Context, v *viper.Viper) (calidumService *calidum.CalidumService, err error) {
-	// Enable otel tracing
-	c.tracers.Enabled = v.GetBool(config.FlagEnableOTELTracing)
-
 	// Build new calidum rotae service with its dependencies
 	calidumService = calidum.NewCalidumService(calidum.Dependencies{
 		DiscordProviderService: c.discordProvider,
 		EmailProviderService:   c.emailProvider,
-		Tracer:                 c.tracers,
 	})
 
 	return
