@@ -26,4 +26,4 @@ docker-compose:
 	@docker-compose build --no-cache && docker-compose up
 
 docker-compose-dev:
-	@docker-compose -f docker-compose.dev.yml build && docker-compose up
+	@docker-compose -f docker-compose.dev.yml up --build

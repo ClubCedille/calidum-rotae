@@ -90,6 +90,7 @@ func (tracer *Traces) GrpcSpan(ctx context.Context, spanName, funcName, service 
 			attribute.String("rpc.system", "grpc"),
 			attribute.String("rpc.method", funcName),
 			attribute.String("rpc.service", service),
+			attribute.Int("rpc.grpc.status_code", 200),
 		),
 	)
 }

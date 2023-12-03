@@ -63,7 +63,7 @@ func (c *CalidumService) SendEmailRpcRequest(ctx context.Context, body []byte) (
 		RequestDetails: data.RequestDetails,
 	})
 	if err != nil {
-		return fmt.Errorf("error sending rpc request to discord provider: %s Response: %s", err.Error(), resp)
+		return fmt.Errorf("error sending rpc request to email provider: %s Response: %s", err.Error(), resp)
 	}
 
 	return nil
