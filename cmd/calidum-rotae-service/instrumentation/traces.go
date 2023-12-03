@@ -101,6 +101,8 @@ func (tracer *Traces) HttpPostSpan(ctx context.Context, g *gin.Context, spanName
 			attribute.String("http.scheme", "http"),
 			attribute.String("http.target", g.Request.URL.Path),
 			attribute.String("http.host", g.Request.Host),
+			attribute.Int("http.status_code", g.Writer.Status()),
+			attribute.String("http.user_agent", g.Request.UserAgent()),
 		),
 	)
 }

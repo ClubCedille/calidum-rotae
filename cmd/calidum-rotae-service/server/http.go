@@ -21,12 +21,19 @@ import (
 
 const (
 	ENV_CALIDUM_ROTAE_SERVICE_API_KEY = "CALIDUM_ROTAE_SERVICE_API_KEY"
-	CALIDUM_ROTAE_TRACER_NAME         = "calidum-rotae-tracer"
-	EMAIL_POST_REQUEST                = "/email"
-	DISCORD_POST_REQUEST              = "/discord"
-	DEFAULT_POST_REQUEST              = "/"
-	DISCORD_RPC_FUNC                  = "SendDiscordRpcRequest"
-	EMAIL_RPC_FUNC                    = "SendEmailRpcRequest"
+
+	CALIDUM_ROTAE_TRACER_NAME = "calidum-rotae-tracer"
+
+	EMAIL_POST_REQUEST   = "/email"
+	DISCORD_POST_REQUEST = "/discord"
+	DEFAULT_POST_REQUEST = "/"
+
+	DISCORD_RPC_FUNC = "SendDiscordRpcRequest"
+	EMAIL_RPC_FUNC   = "SendEmailRpcRequest"
+
+	DISCORD_END_OF_SPAN = "Discord message sent!"
+	EMAIL_END_OF_SPAN   = "Email sent!"
+	OK_SPAN             = "HTTP request sent!"
 )
 
 func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper, services calidum.CalidumClient) (*serverutils.HttpServer, error) {
@@ -72,7 +79,7 @@ func authenticationIsValid(g *gin.Context) bool {
 	return found && providedAPIKey == apiKey
 }
 
-func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span) {
+func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span, error) {
 	ctx, emailProviderGrpcSpan := tracer.GrpcSpan(ctx, EMAIL_RPC_FUNC, EMAIL_RPC_FUNC, instrumentation.EMAIL_PROVIDER_SERVICE)
 	err := services.SendEmailRpcRequest(ctx, body)
 	if err != nil {
@@ -81,10 +88,10 @@ func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 		emailProviderGrpcSpan.SetStatus(codes.Error, err.Error())
 	}
 
-	return ctx, emailProviderGrpcSpan
+	return ctx, emailProviderGrpcSpan, err
 }
 
-func sendDiscordRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span) {
+func sendDiscordRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) (context.Context, trace.Span, error) {
 	ctx, discordGrpcSpan := tracer.GrpcSpan(ctx, DISCORD_RPC_FUNC, DISCORD_RPC_FUNC, instrumentation.DISCORD_PROVIDER_SERVICE)
 	err := services.SendDiscordRpcRequest(ctx, body)
 	if err != nil {
@@ -93,7 +100,7 @@ func sendDiscordRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []b
 		discordGrpcSpan.SetStatus(codes.Error, err.Error())
 	}
 
-	return ctx, discordGrpcSpan
+	return ctx, discordGrpcSpan, err
 }
 
 // Send only an email
@@ -119,11 +126,13 @@ func emailPostRequest(g *gin.Context, services calidum.CalidumClient, tracer ins
 		return
 	}
 
-	ctx, emailProviderGrpcSpan := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
-	emailProviderGrpcSpan.SetStatus(codes.Ok, "Email sent")
-	emailProviderGrpcSpan.End()
+	ctx, emailProviderGrpcSpan, err := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
+	if err == nil {
+		emailProviderGrpcSpan.SetStatus(codes.Ok, EMAIL_END_OF_SPAN)
+		emailProviderGrpcSpan.End()
+	}
 
-	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
+	httpSpan.SetStatus(codes.Ok, OK_SPAN)
 }
 
 // Send only a discord message
@@ -149,11 +158,13 @@ func discordPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 		return
 	}
 
-	ctx, discordGrpcSpan := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
-	discordGrpcSpan.SetStatus(codes.Ok, "Discord message sent!")
-	discordGrpcSpan.End()
+	ctx, discordGrpcSpan, err := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
+	if err == nil {
+		discordGrpcSpan.SetStatus(codes.Ok, DISCORD_END_OF_SPAN)
+		discordGrpcSpan.End()
+	}
 
-	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
+	httpSpan.SetStatus(codes.Ok, OK_SPAN)
 }
 
 // Send an email and a discord message
@@ -179,13 +190,17 @@ func defaultPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 		return
 	}
 
-	_, discordGrpcSpan := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
-	discordGrpcSpan.SetStatus(codes.Ok, "Discord message sent!")
-	discordGrpcSpan.End()
+	_, discordGrpcSpan, err := sendDiscordRpcRequestWithSpan(ctx, g, body, tracer, services)
+	if err == nil {
+		discordGrpcSpan.SetStatus(codes.Ok, DISCORD_END_OF_SPAN)
+		discordGrpcSpan.End()
+	}
 
-	_, emailProviderGrpcSpan := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
-	emailProviderGrpcSpan.SetStatus(codes.Ok, "Email sent")
-	emailProviderGrpcSpan.End()
+	_, emailProviderGrpcSpan, err := sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
+	if err == nil {
+		emailProviderGrpcSpan.SetStatus(codes.Ok, EMAIL_END_OF_SPAN)
+		emailProviderGrpcSpan.End()
+	}
 
-	httpSpan.SetStatus(codes.Ok, "HTTP request successful")
+	httpSpan.SetStatus(codes.Ok, OK_SPAN)
 }
