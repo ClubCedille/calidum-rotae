@@ -7,7 +7,7 @@ require (
 	github.com/clubcedille/server-utils v1.0.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gin-gonic/gin v1.9.1
-	github.com/lib/pq v1.10.6
+	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.12.0
 	github.com/volatiletech/null/v8 v8.1.2
