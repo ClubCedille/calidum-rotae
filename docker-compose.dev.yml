@@ -1,6 +1,53 @@
 version: '3'
-
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector:0.61.0
+    command: [ "--config=/etc/otel-collector.yaml" ]
+    volumes:
+      - ./.dev/otel-collector.multitenant.yaml:/etc/otel-collector.yaml
+    networks:
+      - microservices
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-multitenancy.enabled=true", "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./.dev/tempo.yaml:/etc/tempo.yaml
+      - ./tempo-data:/tmp/tempo
+    networks:
+      - microservices
+    ports:
+      - "3200"   # tempo
+      - "4318"  # otlp http
+      - "4317"  # otlp grpc
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - ./.dev/prometheus.yaml:/etc/prometheus.yaml
+    networks:
+      microservices:
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.1.1
+    volumes:
+      - ./.dev/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    networks:
+      - microservices
+    ports:
+      - "8080:3000"
+
   email_provider:
     build:
       context: .
@@ -65,9 +112,14 @@ services:
       "--discord_provider_port", "5000",
       "--email_provider_hostname", "email_provider",
       "--email_provider_port", "4000",
-      "--otel_otlp_exporter_host", "localhost",
+      "--otel_otlp_exporter_host", "otel-collector",
       "--otel_otlp_exporter_port", "4318",
     ]
-    
+
+volumes:
+  grafana_data:
+  grafana_config:
+  tempo-data:
+
 networks:
   microservices:
