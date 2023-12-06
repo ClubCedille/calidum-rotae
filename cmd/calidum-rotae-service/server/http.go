@@ -12,6 +12,7 @@ import (
 	"github.com/clubcedille/calidum-rotae-backend/pkg/calidum"
 	"github.com/clubcedille/logger"
 	serverutils "github.com/clubcedille/server-utils"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
@@ -54,6 +55,14 @@ func initHTTPServerHandler(ctx context.Context, services calidum.CalidumClient) 
 
 	// Middlewares configuration
 	g.Use(logger.HTTPLoggerMiddleware(ctxLogger))
+
+	// CORS configuration
+	g.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, 
+        AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "X-API-KEY"},
+        AllowCredentials: true,
+    }))
 
 	// Create the calidum rotae tracer
 	calidumRotaeTracer := instrumentation.Traces{}
