@@ -44,12 +44,12 @@ func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper, services calid
 	// HTTP Server configuration
 	httpServer := &http.Server{}
 	httpServer.Addr = addr
-	httpServer.Handler = initHTTPServerHandler(ctx, services)
+	httpServer.Handler = initHTTPServerHandler(ctx, v, services)
 
 	return serverutils.NewHttpServer(httpServer), nil
 }
 
-func initHTTPServerHandler(ctx context.Context, services calidum.CalidumClient) *gin.Engine {
+func initHTTPServerHandler(ctx context.Context, v *viper.Viper, services calidum.CalidumClient) *gin.Engine {
 	g := gin.New()
 	ctxLogger := logger.NewFromContextOrDefault(ctx)
 
@@ -57,12 +57,8 @@ func initHTTPServerHandler(ctx context.Context, services calidum.CalidumClient) 
 	g.Use(logger.HTTPLoggerMiddleware(ctxLogger))
 
 	// CORS configuration
-	g.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, 
-        AllowMethods:     []string{"POST", "GET", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "X-API-KEY"},
-        AllowCredentials: true,
-    }))
+	corsConfig := setupCorsConfig(v)
+    g.Use(cors.New(corsConfig))
 
 	// Create the calidum rotae tracer
 	calidumRotaeTracer := instrumentation.Traces{}
@@ -101,6 +97,27 @@ func authenticationIsValid(g *gin.Context, httpSpan trace.Span) bool {
 	}
 
 	return true
+}
+
+func setupCorsConfig(v *viper.Viper) cors.Config {
+    allowedDomains := v.GetStringSlice(config.FlagAllowedDomains)
+    return cors.Config{
+        AllowOriginFunc:     CorsOriginFilter(allowedDomains), 
+        AllowMethods:        []string{"POST", "GET", "OPTIONS"},
+        AllowHeaders:        []string{"Origin", "Content-Type", "X-API-KEY"},
+        AllowCredentials:    true,
+    }
+}
+
+func CorsOriginFilter(allowedDomains []string) func(string) bool {
+	return func(origin string) bool {
+        for _, allowed := range allowedDomains {
+            if origin == allowed {
+                return true
+            }
+        }
+        return false
+    }
 }
 
 func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
