@@ -18,6 +18,9 @@ const (
 	// OTEL Tracer settings
 	FlagOTELOtlpExporterHost = "otel_otlp_exporter_host"
 	FlagOTELOtlpExporterPort = "otel_otlp_exporter_port"
+
+	// Allowed domains settings for CORS
+	FlagAllowedDomains = "allowed_domains"
 )
 
 func SetFlags(cmd *cobra.Command) {
@@ -32,6 +35,8 @@ func SetFlags(cmd *cobra.Command) {
 
 	cmd.Flags().String(FlagOTELOtlpExporterHost, "localhost", "The OTEL OTLP exporter host to connect to")
 	cmd.Flags().String(FlagOTELOtlpExporterPort, "4318", "The OTEL OTLP exporter port to connect to")
+
+	cmd.Flags().StringSlice(FlagAllowedDomains, []string{"*"}, "The allowed domains for CORS")
 
 	cmd.MarkFlagRequired(FlagPort)
 }
