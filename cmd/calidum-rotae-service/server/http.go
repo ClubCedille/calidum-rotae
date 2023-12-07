@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/instrumentation"
@@ -110,8 +111,14 @@ func setupCorsConfig(v *viper.Viper) cors.Config {
 }
 
 func CorsOriginFilter(allowedDomains []string) func(string) bool {
-	return func(origin string) bool {
+    return func(origin string) bool {
         for _, allowed := range allowedDomains {
+            // Handle wildcard domains
+            match, _ := filepath.Match(allowed, origin)
+            if match {
+                return true
+            }
+
             if origin == allowed {
                 return true
             }
