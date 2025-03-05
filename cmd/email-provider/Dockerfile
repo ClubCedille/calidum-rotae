@@ -1,5 +1,5 @@
 # Step 1 - compile code binary
-FROM golang:1.21.4-alpine AS builder
+FROM golang:1.24.1-alpine AS builder
 
 LABEL maintainer="Club CEDILLE <cedille@etsmtl.net>"
 
