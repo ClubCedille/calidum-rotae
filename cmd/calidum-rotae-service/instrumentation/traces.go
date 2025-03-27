@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -43,7 +43,7 @@ func newConsoleExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 	)
 }
 
-func newTracerProvider(consoleExporter, otlpExporter sdktrace.SpanExporter) (*sdktrace.TracerProvider, error) {
+func newTracerProvider(otlpExporter sdktrace.SpanExporter) (*sdktrace.TracerProvider, error) {
 	r, err := resource.Merge(
 		resource.Default(),
 		resource.NewWithAttributes(
@@ -57,7 +57,6 @@ func newTracerProvider(consoleExporter, otlpExporter sdktrace.SpanExporter) (*sd
 	}
 
 	return sdktrace.NewTracerProvider(
-		sdktrace.WithSpanProcessor(sdktrace.NewSimpleSpanProcessor(consoleExporter)),
 		sdktrace.WithSpanProcessor(sdktrace.NewSimpleSpanProcessor(otlpExporter)),
 		sdktrace.WithResource(r),
 	), nil
@@ -69,12 +68,12 @@ func SetupOpenTelemetry(ctx context.Context, host, port string) (*sdktrace.Trace
 		return nil, err
 	}
 
-	consoleExporter, err := newConsoleExporter(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	tp, err := newTracerProvider(consoleExporter, otlpExporter)
+	// consoleExporter, err := newConsoleExporter(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+    //    tp, err := newTracerProvider(consoleExporter, otlpExporter)
+	tp, err := newTracerProvider(otlpExporter)
 	if err != nil {
 		return nil, err
 	}

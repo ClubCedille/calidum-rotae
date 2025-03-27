@@ -60,12 +60,12 @@ services:
     networks:
       - microservices
     environment:
-      EMAIL_FROM_ADDRESS: email_from_address
-      EMAIL_FROM_NAME: email_from_name
-      EMAIL_NAME_TO: email_name_to
-      EMAIL_TO_ADDRESS: email_to_address
-      EMAIL_SUBJECT: email_subject
-      EMAIL_SENDGRID_API_KEY: ${EMAIL_SENDGRID_API_KEY}
+      EMAIL_FROM_ADDRESS: noreply@cedille.club
+      EMAIL_FROM_NAME: cedille
+      EMAIL_NAME_TO: cedille
+      EMAIL_TO_ADDRESS: cedille@etsmtl.net
+      EMAIL_SUBJECT: Submission
+      EMAIL_SMTP_API_KEY: ${EMAIL_SMTP_API_KEY}
     entrypoint: [
       "/email_provider",
       "--port", "4000", 
