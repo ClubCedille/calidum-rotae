@@ -81,7 +81,7 @@ func (server *Server) SendEmail(ctx context.Context, message *email_provider.Sen
     sent, err := client.Emails.Send(params)
 
     if err != nil {
-        log.Printf("Email didnt send ")
+        log.Printf("Email didnt send: %s", err)
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error sending email: %s", err)
 	}
     
