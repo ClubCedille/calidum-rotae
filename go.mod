@@ -1,6 +1,8 @@
 module github.com/clubcedille/calidum-rotae-backend
 
-go 1.18
+go 1.23
+
+toolchain go1.24.1
 
 require (
 	github.com/clubcedille/logger v1.0.8
@@ -26,6 +28,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/resend/resend-go/v2 v2.17.0 // indirect
 	github.com/sagikazarmark/locafero v0.3.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect

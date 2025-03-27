@@ -7,8 +7,7 @@ import (
 	"os"
 
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+    "github.com/resend/resend-go/v2"
 )
 
 // environment variables
@@ -18,7 +17,7 @@ const (
 	ENV_EMAIL_NAME_TO          = "EMAIL_NAME_TO"
 	ENV_EMAIL_TO_ADDRESS       = "EMAIL_TO_ADDRESS"
 	ENV_EMAIL_SUBJECT          = "EMAIL_SUBJECT"
-	ENV_EMAIL_SENDGRID_API_KEY = "EMAIL_SENDGRID_API_KEY"
+	ENV_EMAIL_SMTP_API_KEY     = "EMAIL_SMTP_API_KEY"
 )
 
 type Server struct {
@@ -30,19 +29,17 @@ func NewServer() *Server {
 }
 
 func (server *Server) SendEmail(ctx context.Context, message *email_provider.SendEmailRequest) (*email_provider.SendEmailResponse, error) {
-	m := mail.NewV3Mail()
+    
 	emailFromAddress, exists := os.LookupEnv(ENV_MAIL_FROM_ADDRESS)
 	if !exists {
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_MAIL_FROM_ADDRESS)
 	}
 
-	emailFromName, exists := os.LookupEnv(ENV_EMAIL_FROM_NAME)
-	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_FROM_NAME)
-	}
-	e := mail.NewEmail(emailFromName, emailFromAddress)
-	m.SetFrom(e)
-
+	// emailFromName, exists := os.LookupEnv(ENV_EMAIL_FROM_NAME)
+	// if !exists {
+	// 	return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_FROM_NAME)
+	// }
+    
 	emailNameTo, exists := os.LookupEnv(ENV_EMAIL_NAME_TO)
 	if !exists {
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_NAME_TO)
@@ -53,14 +50,13 @@ func (server *Server) SendEmail(ctx context.Context, message *email_provider.Sen
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_TO_ADDRESS)
 	}
 
-	p := mail.NewPersonalization()
-	tos := []*mail.Email{
-		// TODO Send email to more addresses
-		mail.NewEmail(emailNameTo, emailAddressTo),
+    emailSMTPApiKey, exists := os.LookupEnv(ENV_EMAIL_SMTP_API_KEY)
+	if !exists {
+		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_SMTP_API_KEY)
 	}
-	p.AddTos(tos...)
-	p.Subject = os.Getenv(ENV_EMAIL_SUBJECT) // EMAIL_SUBJECT can be null
-	m.AddPersonalizations(p)
+	emailSubject := os.Getenv(ENV_EMAIL_SUBJECT) // EMAIL_SUBJECT can be null
+
+    client := resend.NewClient(emailSMTPApiKey)
 
 	htmlContent := fmt.Sprintf(
 		`
@@ -72,46 +68,22 @@ func (server *Server) SendEmail(ctx context.Context, message *email_provider.Sen
 		`,
 		message.Sender.FirstName, message.Sender.LastName, message.Sender.Email,
 		message.RequestDetails, message.RequestService)
-	c := mail.NewContent("text/html", htmlContent)
-	m.AddContent(c)
+    
+    params := &resend.SendEmailRequest{
+        To:      []string{emailAddressTo},
+        From:    emailFromAddress,
+        Text:    "hello " + emailNameTo,
+        Html:    htmlContent,
+        Subject: emailSubject,
+        ReplyTo: "noreply@cedille.club",
+    }
 
-	mailSettings := mail.NewMailSettings()
-	bypassBounceManagement := mail.NewSetting(true)
-	mailSettings.SetBypassBounceManagement(bypassBounceManagement)
-	bypassSpamManagement := mail.NewSetting(true)
-	mailSettings.SetBypassSpamManagement(bypassSpamManagement)
-	bypassUnsubscribeManagement := mail.NewSetting(true)
-	mailSettings.SetBypassUnsubscribeManagement(bypassUnsubscribeManagement)
+    sent, err := client.Emails.Send(params)
 
-	footerSetting := mail.NewFooterSetting()
-	footerSetting.SetText("footer")
-	footerSetting.SetEnable(true)
-	footerSetting.SetHTML("<html><body><br><br>Club CEDILLE, ETS</body></html>")
-	mailSettings.SetFooter(footerSetting)
-
-	spamCheckSetting := mail.NewSpamCheckSetting()
-	spamCheckSetting.SetEnable(true)
-	spamCheckSetting.SetSpamThreshold(1)
-	spamCheckSetting.SetPostToURL("https://spamcatcher.sendgrid.com")
-	mailSettings.SetSpamCheckSettings(spamCheckSetting)
-	m.SetMailSettings(mailSettings)
-
-	replyToEmail := mail.NewEmail(emailFromName, emailFromAddress)
-	m.SetReplyTo(replyToEmail)
-
-	emailSendgridApiKey, exists := os.LookupEnv(ENV_EMAIL_SENDGRID_API_KEY)
-	if !exists {
-		return &email_provider.SendEmailResponse{}, fmt.Errorf("error getting the env var %s", ENV_EMAIL_SENDGRID_API_KEY)
-	}
-	request := sendgrid.GetRequest(emailSendgridApiKey, "/v3/mail/send", "https://api.sendgrid.com")
-	request.Method = "POST"
-	var Body = mail.GetRequestBody(m)
-	request.Body = Body
-	_, err := sendgrid.API(request)
-	if err != nil {
+    if err != nil {
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error sending email: %s", err)
 	}
-
-	log.Printf("Email sent")
+    
+	log.Printf("Email sent id: ", sent)
 	return &email_provider.SendEmailResponse{}, nil
 }
