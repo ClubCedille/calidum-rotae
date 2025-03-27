@@ -63,7 +63,7 @@ services:
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://localhost:8080/v1/logs"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_METRICS_EXPORTER: "none"
-      OTEL_EXPORTER_OTLP_HEADERS: "x-api-key=MLOCbjzBcZkPyKEl-1SZrWavAVfU2nlb"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-api-key="
                         
     entrypoint: [
       "/calidum_rotae_service",
