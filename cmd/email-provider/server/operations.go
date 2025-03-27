@@ -85,6 +85,6 @@ func (server *Server) SendEmail(ctx context.Context, message *email_provider.Sen
 		return &email_provider.SendEmailResponse{}, fmt.Errorf("error sending email: %s", err)
 	}
     
-	log.Printf("Email sent id: ", sent)
+	log.Printf("Email sent id: %v", sent)
 	return &email_provider.SendEmailResponse{}, nil
 }
