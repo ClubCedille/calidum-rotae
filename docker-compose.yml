@@ -17,7 +17,7 @@ services:
       EMAIL_FROM_NAME: cedille
       EMAIL_NAME_TO: cedille
       EMAIL_TO_ADDRESS: cedille@etsmtl.net
-      EMAIL_SUBJECT: email_subject
+      EMAIL_SUBJECT: Submission
       EMAIL_SMTP_API_KEY: ${EMAIL_SMTP_API_KEY}
     entrypoint: [
       "/email_provider",
