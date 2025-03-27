@@ -58,15 +58,17 @@ func (server *Server) SendMessage(ctx context.Context, message *discord_provider
 	}
 
 	resp, err := http.Post(url, "application/json", payload)
-	if err != nil {
-		defer resp.Body.Close()
-		respBody, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: status code %d", resp.StatusCode)
-		}
-		return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
 
-	}
+    if err != nil {
+        return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: %v", err)
+    }
+    defer resp.Body.Close()
+    
+
+    respBody, err := ioutil.ReadAll(resp.Body)
+    if err != nil {        
+        return &discord_provider.SendMessageResponse{}, fmt.Errorf("error sending discord webhook: status code: %d\n body: %s", resp.StatusCode, string(respBody))
+    }	
 
 	log.Printf("Discord message sent")
 	return &discord_provider.SendMessageResponse{}, nil
