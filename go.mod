@@ -8,7 +8,7 @@ require (
 	github.com/clubcedille/logger v1.0.8
 	github.com/clubcedille/server-utils v1.0.0
 	github.com/gin-contrib/cors v1.7.4
-	github.com/gin-gonic/gin v1.10.0
+	github.com/gin-gonic/gin v1.10.1
 	github.com/resend/resend-go/v2 v2.17.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
