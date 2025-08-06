@@ -2,7 +2,7 @@ module github.com/clubcedille/calidum-rotae-backend
 
 go 1.23.0
 
-toolchain go1.24.1
+toolchain go1.24.6
 
 require (
 	github.com/clubcedille/logger v1.0.8
