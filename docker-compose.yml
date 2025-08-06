@@ -21,7 +21,7 @@ services:
       EMAIL_SMTP_API_KEY: ${EMAIL_SMTP_API_KEY}
     entrypoint: [
       "/email_provider",
-      "--port", "4000", 
+      "--port", "4000",
     ]
 
   discord_provider:
@@ -39,7 +39,23 @@ services:
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
     entrypoint: [
       "/discord_provider",
-      "--port", "5000", 
+      "--port", "5000",
+    ]
+
+  shell_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/shell-provider/Dockerfile
+    container_name: shell_provider
+    ports:
+      - 6000:6000
+    expose:
+      - 6000
+    networks:
+      - microservices
+    entrypoint: [
+      "/shell_provider",
+      "--port", "6000",
     ]
 
   calidum_rotae_service:
@@ -64,7 +80,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_METRICS_EXPORTER: "none"
       OTEL_EXPORTER_OTLP_HEADERS: "x-api-key="
-                        
+
     entrypoint: [
       "/calidum_rotae_service",
       "--port", "3000",
@@ -76,6 +92,6 @@ services:
       "--otel_otlp_exporter_port", "8080",
       "--allowed_domains", "http://localhost*",
     ]
-    
+
 networks:
   microservices:

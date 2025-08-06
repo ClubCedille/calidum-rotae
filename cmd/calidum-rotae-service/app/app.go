@@ -9,6 +9,7 @@ import (
 	"github.com/clubcedille/calidum-rotae-backend/pkg/calidum"
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
+    shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
 	serverutils "github.com/clubcedille/server-utils"
 	"github.com/spf13/viper"
 )
@@ -22,6 +23,9 @@ type CalidumRotaeService struct {
 
 	// Email provider service client
 	emailProvider email_provider.EmailProviderClient
+
+    // Shell provider service client
+    shellProvider shell_provider.ShellProviderClient
 
 	// HTTP server - our REST API
 	httpServer serverutils.Server
