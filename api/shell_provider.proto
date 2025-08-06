@@ -1,0 +1,21 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider;shell_provider";
+
+package shell_provider;
+
+import "provider.proto";
+
+
+message SendCommandRequest {
+	string RequestCommand = 1;
+}
+
+message SendCommandResponse {
+	string CommandResponse = 1;
+}
+
+
+service ShellProvider {
+	// SendCommand sends a command to a fake shell
+	rpc SendCommand(SendCommandRequest) returns (SendCommandResponse);
+}
