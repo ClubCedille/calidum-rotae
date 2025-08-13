@@ -21,4 +21,4 @@ FROM alpine
 COPY --from=builder /app/shell_provider /shell_provider
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENTRYPOINT ["/email_provider"]
+ENTRYPOINT ["/shell_provider"]

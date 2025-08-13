@@ -36,7 +36,7 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeSe
 	service = &CalidumRotaeService{}
 
 	// Create clients of the gRPC providers
-	service.discordProvider, service.emailProvider, err = client.InitFromViper(ctx, v)
+	service.discordProvider, service.emailProvider, service.shellProvider, err = client.InitFromViper(ctx, v)
 	if err != nil {
 		return nil, fmt.Errorf("error when initializing client providers: %s", err)
 	}
@@ -61,6 +61,7 @@ func (c *CalidumRotaeService) initService(ctx context.Context, v *viper.Viper) (
 	calidumService = calidum.NewCalidumService(calidum.Dependencies{
 		DiscordProviderService: c.discordProvider,
 		EmailProviderService:   c.emailProvider,
+		ShellProviderService:   c.shellProvider,
 	})
 
 	return

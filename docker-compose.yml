@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   email_provider:
     build:
@@ -88,6 +86,8 @@ services:
       "--discord_provider_port", "5000",
       "--email_provider_hostname", "email_provider",
       "--email_provider_port", "4000",
+      "--shell_provider_hostname", "shell_provider",
+      "--shell_provider_port", "6000",
       "--otel_otlp_exporter_host", "localhost",
       "--otel_otlp_exporter_port", "8080",
       "--allowed_domains", "http://localhost*",

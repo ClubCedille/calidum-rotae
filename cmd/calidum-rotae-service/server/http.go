@@ -173,13 +173,15 @@ func sendShellRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 	ctx, shellGrpcSpan := tracer.GrpcSpan(ctx, SHELL_RPC_FUNC, SHELL_RPC_FUNC, instrumentation.SHELL_PROVIDER_SERVICE)
 	defer shellGrpcSpan.End()
 
-	err := services.SendShellRpcRequest(ctx, body)
+	response, err := services.SendShellRpcRequest(ctx, body)
+	fmt.Println(string(response))
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		shellGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
 		shellGrpcSpan.RecordError(err)
 		shellGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
+		g.JSON(http.StatusOK, gin.H{"response": response})
 		shellGrpcSpan.SetStatus(codes.Ok, SHELL_END_OF_SPAN)
 	}
 
@@ -229,6 +231,7 @@ func discordPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 }
 
 func shellPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
+	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
 	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, SHELL_POST_REQUEST)
