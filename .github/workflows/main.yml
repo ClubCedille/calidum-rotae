@@ -11,6 +11,7 @@ on:
           - calidum-rotae-service
           - discord-provider
           - email-provider
+          - shell-provider
       tag:
         required: true
         description: Version pour tagger l'image
