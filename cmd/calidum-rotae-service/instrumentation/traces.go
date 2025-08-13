@@ -21,6 +21,7 @@ const (
 	CALIDUM_ROTAE_SERVICE    = "calidum_rotae_service"
 	DISCORD_PROVIDER_SERVICE = "discord_provider"
 	EMAIL_PROVIDER_SERVICE   = "email_provider"
+    SHELL_PROVIDER_SERVICE   = "shell_provider"
 )
 
 type Traces struct {

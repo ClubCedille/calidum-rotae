@@ -8,6 +8,7 @@ import (
 	"github.com/clubcedille/calidum-rotae-backend/cmd/calidum-rotae-service/config"
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
+	shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -20,6 +21,7 @@ const (
 func InitFromViper(ctx context.Context, v *viper.Viper) (
 	discordClient discord_provider.DiscordProviderClient,
 	emailClient email_provider.EmailProviderClient,
+	shellClient shell_provider.ShellProviderClient,
 	err error,
 ) {
 
@@ -34,6 +36,12 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (
 	emailClient, err = initEmailProviderClient(ctx, v, certFilePath)
 	if err != nil {
 		err = fmt.Errorf("error when initializing email provider client: %s", err)
+		return
+	}
+
+	shellClient, err = initShellProviderClient(ctx, v, certFilePath)
+	if err != nil {
+		err = fmt.Errorf("error when initializing shell provider client: %s", err)
 		return
 	}
 
@@ -88,4 +96,29 @@ func initEmailProviderClient(ctx context.Context, v *viper.Viper, certFilePath s
 	}
 
 	return email_provider.NewEmailProviderClient(conn), nil
+}
+
+func initShellProviderClient(ctx context.Context, v *viper.Viper, certFilePath string) (client shell_provider.ShellProviderClient, err error) {
+	hostname := v.GetString(config.FlagShellProviderHostname)
+	port := v.GetUint32(config.FlagShellProviderPort)
+	target := fmt.Sprintf("%s:%d", hostname, port)
+
+	conn := &grpc.ClientConn{}
+	if certFilePath != "" {
+		creds, err := credentials.NewClientTLSFromFile(certFilePath, "")
+		if err != nil {
+			return nil, fmt.Errorf("error creating TLS credentials for the shell microservice %v", err)
+		}
+		conn, err = grpc.Dial(target, grpc.WithTransportCredentials(creds))
+		if err != nil {
+			return nil, fmt.Errorf("error when dialing shell microservice using TLS: %s", err)
+		}
+	} else {
+		conn, err = grpc.Dial(target, grpc.WithInsecure())
+		if err != nil {
+			return nil, fmt.Errorf("error when dialing shell microservice: %s", err)
+		}
+	}
+
+	return shell_provider.NewShellProviderClient(conn), nil
 }

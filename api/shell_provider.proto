@@ -3,9 +3,6 @@ option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/
 
 package shell_provider;
 
-import "provider.proto";
-
-
 message SendCommandRequest {
 	string RequestCommand = 1;
 }

@@ -15,6 +15,10 @@ const (
 	FlagEmailProviderHostname = "email_provider_hostname"
 	FlagEmailProviderPort     = "email_provider_port"
 
+	// Shell provider settings
+	FlagShellProviderHostname = "shell_provider_hostname"
+	FlagShellProviderPort     = "shell_provider_port"
+
 	// OTEL Tracer settings
 	FlagOTELOtlpExporterHost = "otel_otlp_exporter_host"
 	FlagOTELOtlpExporterPort = "otel_otlp_exporter_port"
@@ -32,6 +36,9 @@ func SetFlags(cmd *cobra.Command) {
 
 	cmd.Flags().String(FlagEmailProviderHostname, "email_provider", "The email provider microservice's hostname to connect to")
 	cmd.Flags().Uint32(FlagEmailProviderPort, 0, "The email provider microservice's port to connect to")
+
+	cmd.Flags().String(FlagShellProviderHostname, "shell_provider", "The shell provider microservice's hostname to connect to")
+	cmd.Flags().Uint32(FlagShellProviderPort, 0, "The shell provider microservice's port to connect to")
 
 	cmd.Flags().String(FlagOTELOtlpExporterHost, "localhost", "The OTEL OTLP exporter host to connect to")
 	cmd.Flags().String(FlagOTELOtlpExporterPort, "4318", "The OTEL OTLP exporter port to connect to")

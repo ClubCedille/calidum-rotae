@@ -7,16 +7,19 @@ import (
 
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
+	shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
 )
 
 type CalidumService struct {
 	discordProviderService discord_provider.DiscordProviderClient
 	emailProviderService   email_provider.EmailProviderClient
+	shellProviderService   shell_provider.ShellProviderClient
 }
 
 type CalidumClient interface {
 	SendDiscordRpcRequest(ctx context.Context, body []byte) (err error)
 	SendEmailRpcRequest(ctx context.Context, body []byte) (err error)
+	SendShellRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 }
 
 var _ CalidumClient = &CalidumService{}
@@ -24,12 +27,14 @@ var _ CalidumClient = &CalidumService{}
 type Dependencies struct {
 	DiscordProviderService discord_provider.DiscordProviderClient
 	EmailProviderService   email_provider.EmailProviderClient
+	ShellProviderService   shell_provider.ShellProviderClient
 }
 
 func NewCalidumService(deps Dependencies) *CalidumService {
 	return &CalidumService{
 		discordProviderService: deps.DiscordProviderService,
 		emailProviderService:   deps.EmailProviderService,
+		shellProviderService:   deps.ShellProviderService,
 	}
 }
 
@@ -67,4 +72,26 @@ func (c *CalidumService) SendEmailRpcRequest(ctx context.Context, body []byte) (
 	}
 
 	return nil
+}
+
+func (c *CalidumService) SendShellRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
+	var data *shell_provider.SendCommandRequest
+	if err = json.Unmarshal(body, &data); err != nil {
+		return nil, fmt.Errorf("error binding JSON data to gRPC shell object: %s", err.Error())
+	}
+
+	resp, err := c.shellProviderService.SendCommand(ctx, &shell_provider.SendCommandRequest{
+		RequestCommand: data.RequestCommand,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error sending rpc request to shell provider: %s", err.Error())
+	}
+
+	// Convert the response to JSON
+	jsonResponse, err = json.Marshal(resp)
+	if err != nil {
+		return nil, fmt.Errorf("error converting response to JSON: %s", err.Error())
+	}
+
+	return jsonResponse, nil
 }
