@@ -40,6 +40,7 @@ This will launch an instance of:
 - calidum_rotae_service
 - discord_provider
 - email_provider
+- shell_provider
 - grafana
 - prometheus
 - tempo
@@ -69,7 +70,17 @@ curl -X POST \
   "RequestDetails": "details"
 }'
 ```
+4. To test the shell, execute this command:
+```bash
+curl -X POST \
+  http://localhost:3000/ \
+  -H 'X-API-KEY: your_calidum_rotae_service_api_key_here' \
+  -H 'Content-Type: application/json' \
+  -d '{ "requestCommand": "sudo ls" }'
+```
 
-4. Go to the "Explore" section in Grafana to see if the traces are present (wait 15 seconds before executing the query). The traces should be visible.
+5. Additionnal Shell commands can be added in the ![Operations](cmd/shell-provider/server/operations.go) file.
+   
+6. Go to the "Explore" section in Grafana to see if the traces are present (wait 15 seconds before executing the query). The traces should be visible.
 ![Traces](docs/traces.png)
 
