@@ -56,9 +56,11 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-${{ github.event.inputs.image }}-new
 
       - name: Refresh Cache
+        env:
+          IMAGE_NAME: ${{ github.event.inputs.image }}
         run: |
-          rm -rf /tmp/.buildx-cache-${{ github.event.inputs.image }}
-          mv /tmp/.buildx-cache-${{ github.event.inputs.image }}-new /tmp/.buildx-cache-${{ github.event.inputs.image }}
+          rm -rf "/tmp/.buildx-cache-${IMAGE_NAME}"
+          mv "/tmp/.buildx-cache-${IMAGE_NAME}-new" "/tmp/.buildx-cache-${IMAGE_NAME}"
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
