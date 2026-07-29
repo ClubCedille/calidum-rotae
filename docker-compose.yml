@@ -56,6 +56,41 @@ services:
       "--port", "6000",
     ]
 
+  cluster_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/cluster-provider/Dockerfile
+    container_name: cluster_provider
+    ports:
+      - 7000:7000
+    expose:
+      - 7000
+    networks:
+      - microservices
+    # environment:
+    entrypoint: [
+      "/cluster_provider",
+      "--port", "7000",
+    ]
+
+  github_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/github-provider/Dockerfile
+    container_name: github_provider
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    networks:
+      - microservices
+    # environment:
+    #   K8s_SERVICE_ACCOUNT: ${K8s_SERVICE_ACCOUNT}
+    entrypoint: [
+      "/github_provider",
+      "--port", "8000",
+    ]
+
   calidum_rotae_service:
     build:
       context: .
@@ -70,6 +105,9 @@ services:
     depends_on:
       - email_provider
       - discord_provider
+      - shell_provider
+      - cluster_provider
+      - github_provider
     environment:
       CALIDUM_ROTAE_SERVICE_API_KEY: ${CALIDUM_ROTAE_SERVICE_API_KEY}
       OTEL_SERVICE_NAME: "calidum"
@@ -88,6 +126,10 @@ services:
       "--email_provider_port", "4000",
       "--shell_provider_hostname", "shell_provider",
       "--shell_provider_port", "6000",
+      "--cluster_provider_hostname", "cluster_provider",
+      "--cluster_provider_port", "7000",
+      "--github_provider_hostname", "github_provider",
+      "--github_provider_port", "8000",
       "--otel_otlp_exporter_host", "localhost",
       "--otel_otlp_exporter_port", "8080",
       "--allowed_domains", "http://localhost*",
