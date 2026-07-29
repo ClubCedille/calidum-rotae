@@ -7,18 +7,16 @@ setup: 	## Setup command
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 
-# gRPC protoc template
-define grpc_template
-	protoc -I./api --go_out=$(1) --go_opt=paths=source_relative \
-    --go-grpc_out=$(1) --go-grpc_opt=paths=source_relative \
-    $(2)
-endef
-
-grpc: 	## Generate gRPC files
-	$(call grpc_template,./pkg/proto-gen/provider,api/provider.proto)
-	$(call grpc_template,./pkg/proto-gen/email-provider,api/email_provider.proto)
-	$(call grcp_template,./pkg/proto-gen/shell-provider,api/shell_provider.proto)
-	$(call grpc_template,./pkg/proto-gen/discord-provider,api/discord_provider.proto)
+grpc: ## Generate gRPC files
+	for file in api/*.proto; do \
+		name=$$(basename "$$file" .proto); \
+		name=$${name//_/-}; \
+		mkdir -p "./pkg/proto-gen/$$name"; \
+		protoc -I./api \
+			--go_out=./pkg/proto-gen/$$name --go_opt=paths=source_relative \
+			--go-grpc_out=./pkg/proto-gen/$$name --go-grpc_opt=paths=source_relative \
+			"$$file"; \
+	done
 ##########################################
 ####### Docker related commands ##########
 ##########################################

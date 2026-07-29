@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_provider";
+
+package github_provider;
+
+import "provider.proto";
+
+
+message FetchPRRequest {
+	string UserUID = 1;
+}
+
+message FetchPRResponse {}
+
+
+service GithubProvider {
+	// Get User pull requests
+	rpc FetchPR(FetchPRRequest) returns (FetchPRResponse);
+}
