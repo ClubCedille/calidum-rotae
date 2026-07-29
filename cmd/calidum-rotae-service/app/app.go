@@ -10,6 +10,8 @@ import (
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
 	shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
+	cluster_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/cluster-provider"
+	github_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider"
 	serverutils "github.com/clubcedille/server-utils"
 	"github.com/spf13/viper"
 )
@@ -27,6 +29,12 @@ type CalidumRotaeService struct {
 	// Shell provider service client
 	shellProvider shell_provider.ShellProviderClient
 
+	// Cluster provider service client
+	clusterProvider cluster_provider.ClusterProviderClient
+
+	// Github provider service client
+	githubProvider github_provider.GithubProviderClient
+
 	// HTTP server - our REST API
 	httpServer serverutils.Server
 }
@@ -36,7 +44,7 @@ func InitFromViper(ctx context.Context, v *viper.Viper) (service *CalidumRotaeSe
 	service = &CalidumRotaeService{}
 
 	// Create clients of the gRPC providers
-	service.discordProvider, service.emailProvider, service.shellProvider, err = client.InitFromViper(ctx, v)
+	service.discordProvider, service.emailProvider, service.shellProvider, service.clusterProvider, service.githubProvider, err = client.InitFromViper(ctx, v)
 	if err != nil {
 		return nil, fmt.Errorf("error when initializing client providers: %s", err)
 	}
@@ -62,6 +70,8 @@ func (c *CalidumRotaeService) initService(ctx context.Context, v *viper.Viper) (
 		DiscordProviderService: c.discordProvider,
 		EmailProviderService:   c.emailProvider,
 		ShellProviderService:   c.shellProvider,
+		ClusterProviderService:   c.clusterProvider,
+		GithubProviderService:   c.githubProvider,
 	})
 
 	return

@@ -19,6 +19,14 @@ const (
 	FlagShellProviderHostname = "shell_provider_hostname"
 	FlagShellProviderPort     = "shell_provider_port"
 
+	// Cluster provider settings
+	FlagClusterProviderHostname = "cluster_provider_hostname"
+	FlagClusterProviderPort     = "cluster_provider_port"
+
+	// Github provider settings
+	FlagGithubProviderHostname = "github_provider_hostname"
+	FlagGithubProviderPort     = "github_provider_port"
+
 	// OTEL Tracer settings
 	FlagOTELOtlpExporterHost = "otel_otlp_exporter_host"
 	FlagOTELOtlpExporterPort = "otel_otlp_exporter_port"
@@ -39,6 +47,12 @@ func SetFlags(cmd *cobra.Command) {
 
 	cmd.Flags().String(FlagShellProviderHostname, "shell_provider", "The shell provider microservice's hostname to connect to")
 	cmd.Flags().Uint32(FlagShellProviderPort, 0, "The shell provider microservice's port to connect to")
+
+	cmd.Flags().String(FlagClusterProviderHostname, "cluster_provider", "The cluster provider microservice's hostname to connect to")
+	cmd.Flags().Uint32(FlagClusterProviderPort, 0, "The cluster provider microservice's port to connect to")
+
+	cmd.Flags().String(FlagGithubProviderHostname, "github_provider", "The github provider microservice's hostname to connect to")
+	cmd.Flags().Uint32(FlagGithubProviderPort, 0, "The github provider microservice's port to connect to")
 
 	cmd.Flags().String(FlagOTELOtlpExporterHost, "localhost", "The OTEL OTLP exporter host to connect to")
 	cmd.Flags().String(FlagOTELOtlpExporterPort, "4318", "The OTEL OTLP exporter port to connect to")
