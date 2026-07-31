@@ -73,7 +73,7 @@ curl -X POST \
 4. To test the shell, execute this command:
 ```bash
 curl -X POST \
-  http://localhost:3000/ \
+  http://localhost:3000/command \
   -H 'X-API-KEY: your_calidum_rotae_service_api_key_here' \
   -H 'Content-Type: application/json' \
   -d '{ "requestCommand": "sudo ls" }'
@@ -83,4 +83,3 @@ curl -X POST \
    
 6. Go to the "Explore" section in Grafana to see if the traces are present (wait 15 seconds before executing the query). The traces should be visible.
 ![Traces](docs/traces.png)
-

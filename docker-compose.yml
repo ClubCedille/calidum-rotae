@@ -70,6 +70,7 @@ services:
     depends_on:
       - email_provider
       - discord_provider
+      - shell_provider
     environment:
       CALIDUM_ROTAE_SERVICE_API_KEY: ${CALIDUM_ROTAE_SERVICE_API_KEY}
       OTEL_SERVICE_NAME: "calidum"
