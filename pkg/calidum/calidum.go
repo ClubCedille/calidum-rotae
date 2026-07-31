@@ -19,7 +19,7 @@ type CalidumService struct {
 type CalidumClient interface {
 	SendDiscordRpcRequest(ctx context.Context, body []byte) (err error)
 	SendEmailRpcRequest(ctx context.Context, body []byte) (err error)
-	SendShellRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
+	SendShellRpcRequest(ctx context.Context, body []byte) (response string, err error)
 }
 
 var _ CalidumClient = &CalidumService{}
@@ -74,24 +74,18 @@ func (c *CalidumService) SendEmailRpcRequest(ctx context.Context, body []byte) (
 	return nil
 }
 
-func (c *CalidumService) SendShellRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
-	var data *shell_provider.SendCommandRequest
-	if err = json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("error binding JSON data to gRPC shell object: %s", err.Error())
+func (c *CalidumService) SendShellRpcRequest(ctx context.Context, body []byte) (string, error) {
+	var data shell_provider.SendCommandRequest
+	if err := json.Unmarshal(body, &data); err != nil {
+		return "", fmt.Errorf("error binding JSON data to gRPC shell object: %s", err.Error())
 	}
 
 	resp, err := c.shellProviderService.SendCommand(ctx, &shell_provider.SendCommandRequest{
 		RequestCommand: data.RequestCommand,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error sending rpc request to shell provider: %s", err.Error())
+		return "", fmt.Errorf("error sending rpc request to shell provider: %s", err.Error())
 	}
 
-	// Convert the response to JSON
-	jsonResponse, err = json.Marshal(resp)
-	if err != nil {
-		return nil, fmt.Errorf("error converting response to JSON: %s", err.Error())
-	}
-
-	return jsonResponse, nil
+	return resp.GetCommandResponse(), nil
 }

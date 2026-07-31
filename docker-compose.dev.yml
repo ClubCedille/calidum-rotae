@@ -89,6 +89,22 @@ services:
       "--port", "5000", 
     ]
 
+  shell_provider:
+    build:
+      context: .
+      dockerfile: ./cmd/shell-provider/Dockerfile
+    container_name: shell_provider
+    ports:
+      - 6000:6000
+    expose:
+      - 6000
+    networks:
+      - microservices
+    entrypoint: [
+      "/shell_provider",
+      "--port", "6000",
+    ]
+
   calidum_rotae_service:
     build:
       context: .
@@ -103,6 +119,7 @@ services:
     depends_on:
       - email_provider
       - discord_provider
+      - shell_provider
     environment:
       CALIDUM_ROTAE_SERVICE_API_KEY: ${CALIDUM_ROTAE_SERVICE_API_KEY}
     entrypoint: [
@@ -112,6 +129,8 @@ services:
       "--discord_provider_port", "5000",
       "--email_provider_hostname", "email_provider",
       "--email_provider_port", "4000",
+      "--shell_provider_hostname", "shell_provider",
+      "--shell_provider_port", "6000",
       "--otel_otlp_exporter_host", "otel-collector",
       "--otel_otlp_exporter_port", "4318",
       "--allowed_domains", "http://localhost*",

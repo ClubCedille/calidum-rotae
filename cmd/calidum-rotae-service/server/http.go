@@ -30,16 +30,16 @@ const (
 
 	EMAIL_POST_REQUEST   = "/email"
 	DISCORD_POST_REQUEST = "/discord"
-    SHELL_POST_REQUEST   = "/command"
+	SHELL_POST_REQUEST   = "/command"
 	DEFAULT_POST_REQUEST = "/"
 
 	DISCORD_RPC_FUNC = "SendDiscordRpcRequest"
 	EMAIL_RPC_FUNC   = "SendEmailRpcRequest"
-    SHELL_RPC_FUNC   = "SendShellRpcRequest"
+	SHELL_RPC_FUNC   = "SendShellRpcRequest"
 
 	DISCORD_END_OF_SPAN = "Discord message sent!"
 	EMAIL_END_OF_SPAN   = "Email sent!"
-    SHELL_END_OF_SPAN   = "Shell command sent!"
+	SHELL_END_OF_SPAN   = "Shell command sent!"
 	OK_SPAN             = "HTTP request sent!"
 )
 
@@ -63,7 +63,7 @@ func initHTTPServerHandler(ctx context.Context, v *viper.Viper, services calidum
 
 	// CORS configuration
 	corsConfig := setupCorsConfig(v)
-    g.Use(cors.New(corsConfig))
+	g.Use(cors.New(corsConfig))
 
 	// Create the calidum rotae tracer
 	calidumRotaeTracer := instrumentation.Traces{}
@@ -72,7 +72,7 @@ func initHTTPServerHandler(ctx context.Context, v *viper.Viper, services calidum
 	g.POST("/", func(g *gin.Context) { defaultPostRequest(g, services, calidumRotaeTracer) })
 	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services, calidumRotaeTracer) })
 	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services, calidumRotaeTracer) })
-    g.POST("/command", func(g *gin.Context) { shellPostRequest(g, services, calidumRotaeTracer) })
+	g.POST("/command", func(g *gin.Context) { shellPostRequest(g, services, calidumRotaeTracer) })
 
 	return g
 }
@@ -106,33 +106,33 @@ func authenticationIsValid(g *gin.Context, httpSpan trace.Span) bool {
 }
 
 func setupCorsConfig(v *viper.Viper) cors.Config {
-    allowedDomains := v.GetStringSlice(config.FlagAllowedDomains)
-    return cors.Config{
-        AllowOriginFunc:     CorsOriginFilter(allowedDomains),
-        AllowMethods:        []string{"POST", "GET", "OPTIONS"},
-        AllowHeaders:        []string{"Origin", "Content-Type", "X-API-KEY"},
-        AllowCredentials:    true,
-    }
+	allowedDomains := v.GetStringSlice(config.FlagAllowedDomains)
+	return cors.Config{
+		AllowOriginFunc:  CorsOriginFilter(allowedDomains),
+		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "X-API-KEY"},
+		AllowCredentials: true,
+	}
 }
 
 func CorsOriginFilter(allowedDomains []string) func(string) bool {
-    return func(origin string) bool {
-        for _, allowed := range allowedDomains {
-            if allowed == origin {
-                return true
-            }
+	return func(origin string) bool {
+		for _, allowed := range allowedDomains {
+			if allowed == origin {
+				return true
+			}
 
-            if strings.Contains(allowed, "*") {
-                // Convert wildcard domain to a regular expression
-                pattern := "^" + strings.ReplaceAll(regexp.QuoteMeta(allowed), "\\*", ".*") + "$"
-                match, _ := regexp.MatchString(pattern, origin)
-                if match {
-                    return true
-                }
-            }
-        }
-        return false
-    }
+			if strings.Contains(allowed, "*") {
+				// Convert wildcard domain to a regular expression
+				pattern := "^" + strings.ReplaceAll(regexp.QuoteMeta(allowed), "\\*", ".*") + "$"
+				match, _ := regexp.MatchString(pattern, origin)
+				if match {
+					return true
+				}
+			}
+		}
+		return false
+	}
 }
 
 func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
@@ -174,7 +174,6 @@ func sendShellRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 	defer shellGrpcSpan.End()
 
 	response, err := services.SendShellRpcRequest(ctx, body)
-	fmt.Println(string(response))
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		shellGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
@@ -231,7 +230,6 @@ func discordPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 }
 
 func shellPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
-	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
 	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, SHELL_POST_REQUEST)
