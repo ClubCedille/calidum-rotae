@@ -10,7 +10,9 @@ message UserResourceRequest {
 	string UserUID = 1;
 }
 
-message GetUserResourcesResponse {}
+message GetUserResourcesResponse {
+    string UserResourcesResponse = 1;
+}
 
 
 service ClusterProvider {

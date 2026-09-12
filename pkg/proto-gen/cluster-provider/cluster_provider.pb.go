@@ -67,9 +67,10 @@ func (x *UserResourceRequest) GetUserUID() string {
 }
 
 type GetUserResourcesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	UserResourcesResponse string                 `protobuf:"bytes,1,opt,name=UserResourcesResponse,proto3" json:"UserResourcesResponse,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *GetUserResourcesResponse) Reset() {
@@ -102,14 +103,22 @@ func (*GetUserResourcesResponse) Descriptor() ([]byte, []int) {
 	return file_cluster_provider_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *GetUserResourcesResponse) GetUserResourcesResponse() string {
+	if x != nil {
+		return x.UserResourcesResponse
+	}
+	return ""
+}
+
 var File_cluster_provider_proto protoreflect.FileDescriptor
 
 const file_cluster_provider_proto_rawDesc = "" +
 	"\n" +
 	"\x16cluster_provider.proto\x12\x10cluster_provider\x1a\x0eprovider.proto\"/\n" +
 	"\x13UserResourceRequest\x12\x18\n" +
-	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"\x1a\n" +
-	"\x18GetUserResourcesResponse2x\n" +
+	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"P\n" +
+	"\x18GetUserResourcesResponse\x124\n" +
+	"\x15UserResourcesResponse\x18\x01 \x01(\tR\x15UserResourcesResponse2x\n" +
 	"\x0fClusterProvider\x12e\n" +
 	"\x10GetUserResources\x12%.cluster_provider.UserResourceRequest\x1a*.cluster_provider.GetUserResourcesResponseB^Z\\github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/cluster-provider;cluster_providerb\x06proto3"
 

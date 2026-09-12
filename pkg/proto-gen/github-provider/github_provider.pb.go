@@ -67,9 +67,10 @@ func (x *FetchPRRequest) GetUserUID() string {
 }
 
 type FetchPRResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ActiveUserRequests string                 `protobuf:"bytes,1,opt,name=ActiveUserRequests,proto3" json:"ActiveUserRequests,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *FetchPRResponse) Reset() {
@@ -102,14 +103,22 @@ func (*FetchPRResponse) Descriptor() ([]byte, []int) {
 	return file_github_provider_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *FetchPRResponse) GetActiveUserRequests() string {
+	if x != nil {
+		return x.ActiveUserRequests
+	}
+	return ""
+}
+
 var File_github_provider_proto protoreflect.FileDescriptor
 
 const file_github_provider_proto_rawDesc = "" +
 	"\n" +
 	"\x15github_provider.proto\x12\x0fgithub_provider\x1a\x0eprovider.proto\"*\n" +
 	"\x0eFetchPRRequest\x12\x18\n" +
-	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"\x11\n" +
-	"\x0fFetchPRResponse2^\n" +
+	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"A\n" +
+	"\x0fFetchPRResponse\x12.\n" +
+	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests2^\n" +
 	"\x0eGithubProvider\x12L\n" +
 	"\aFetchPR\x12\x1f.github_provider.FetchPRRequest\x1a .github_provider.FetchPRResponseB\\ZZgithub.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_providerb\x06proto3"
 

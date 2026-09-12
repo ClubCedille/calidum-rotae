@@ -10,7 +10,9 @@ message FetchPRRequest {
 	string UserUID = 1;
 }
 
-message FetchPRResponse {}
+message FetchPRResponse {
+    string ActiveUserRequests = 1;
+}
 
 
 service GithubProvider {
