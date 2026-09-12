@@ -1,0 +1,32 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_provider";
+
+package github_provider;
+
+//import "provider.proto";
+
+
+message FetchPRRequest {
+	string UserUID = 1;
+}
+
+message FetchPRResponse {
+    string ActiveUserRequests = 1;
+}
+
+message OutlineRequest {
+  string ClubName = 1;
+  string UserUID = 2;
+}
+
+message OutlineResponse {
+  string WorkflowStatus = 1;
+}
+
+service GithubProvider {
+	// Get User pull requests
+	rpc FetchPR(FetchPRRequest) returns (FetchPRResponse);
+
+  // Add new outlines
+  rpc RequestOutline(OutlineRequest) returns (OutlineResponse);
+}
