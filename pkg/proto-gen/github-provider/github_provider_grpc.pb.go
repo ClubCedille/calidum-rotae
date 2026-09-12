@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GithubProvider_FetchPR_FullMethodName = "/github_provider.GithubProvider/FetchPR"
+	GithubProvider_FetchPR_FullMethodName        = "/github_provider.GithubProvider/FetchPR"
+	GithubProvider_RequestOutline_FullMethodName = "/github_provider.GithubProvider/RequestOutline"
 )
 
 // GithubProviderClient is the client API for GithubProvider service.
@@ -28,6 +29,8 @@ const (
 type GithubProviderClient interface {
 	// Get User pull requests
 	FetchPR(ctx context.Context, in *FetchPRRequest, opts ...grpc.CallOption) (*FetchPRResponse, error)
+	// Add new outlines
+	RequestOutline(ctx context.Context, in *OutlineRequest, opts ...grpc.CallOption) (*OutlineResponse, error)
 }
 
 type githubProviderClient struct {
@@ -48,12 +51,24 @@ func (c *githubProviderClient) FetchPR(ctx context.Context, in *FetchPRRequest, 
 	return out, nil
 }
 
+func (c *githubProviderClient) RequestOutline(ctx context.Context, in *OutlineRequest, opts ...grpc.CallOption) (*OutlineResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OutlineResponse)
+	err := c.cc.Invoke(ctx, GithubProvider_RequestOutline_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GithubProviderServer is the server API for GithubProvider service.
 // All implementations must embed UnimplementedGithubProviderServer
 // for forward compatibility.
 type GithubProviderServer interface {
 	// Get User pull requests
 	FetchPR(context.Context, *FetchPRRequest) (*FetchPRResponse, error)
+	// Add new outlines
+	RequestOutline(context.Context, *OutlineRequest) (*OutlineResponse, error)
 	mustEmbedUnimplementedGithubProviderServer()
 }
 
@@ -66,6 +81,9 @@ type UnimplementedGithubProviderServer struct{}
 
 func (UnimplementedGithubProviderServer) FetchPR(context.Context, *FetchPRRequest) (*FetchPRResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FetchPR not implemented")
+}
+func (UnimplementedGithubProviderServer) RequestOutline(context.Context, *OutlineRequest) (*OutlineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestOutline not implemented")
 }
 func (UnimplementedGithubProviderServer) mustEmbedUnimplementedGithubProviderServer() {}
 func (UnimplementedGithubProviderServer) testEmbeddedByValue()                        {}
@@ -106,6 +124,24 @@ func _GithubProvider_FetchPR_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GithubProvider_RequestOutline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OutlineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GithubProviderServer).RequestOutline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GithubProvider_RequestOutline_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GithubProviderServer).RequestOutline(ctx, req.(*OutlineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GithubProvider_ServiceDesc is the grpc.ServiceDesc for GithubProvider service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -116,6 +152,10 @@ var GithubProvider_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FetchPR",
 			Handler:    _GithubProvider_FetchPR_Handler,
+		},
+		{
+			MethodName: "RequestOutline",
+			Handler:    _GithubProvider_RequestOutline_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

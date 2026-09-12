@@ -7,7 +7,6 @@
 package github_provider
 
 import (
-	_ "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/provider"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -110,17 +109,119 @@ func (x *FetchPRResponse) GetActiveUserRequests() string {
 	return ""
 }
 
+type OutlineRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ClubName      string                 `protobuf:"bytes,1,opt,name=ClubName,proto3" json:"ClubName,omitempty"`
+	UserUID       string                 `protobuf:"bytes,2,opt,name=UserUID,proto3" json:"UserUID,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OutlineRequest) Reset() {
+	*x = OutlineRequest{}
+	mi := &file_github_provider_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OutlineRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OutlineRequest) ProtoMessage() {}
+
+func (x *OutlineRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_github_provider_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OutlineRequest.ProtoReflect.Descriptor instead.
+func (*OutlineRequest) Descriptor() ([]byte, []int) {
+	return file_github_provider_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *OutlineRequest) GetClubName() string {
+	if x != nil {
+		return x.ClubName
+	}
+	return ""
+}
+
+func (x *OutlineRequest) GetUserUID() string {
+	if x != nil {
+		return x.UserUID
+	}
+	return ""
+}
+
+type OutlineResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	WorkflowStatus string                 `protobuf:"bytes,1,opt,name=WorkflowStatus,proto3" json:"WorkflowStatus,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *OutlineResponse) Reset() {
+	*x = OutlineResponse{}
+	mi := &file_github_provider_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OutlineResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OutlineResponse) ProtoMessage() {}
+
+func (x *OutlineResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_github_provider_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OutlineResponse.ProtoReflect.Descriptor instead.
+func (*OutlineResponse) Descriptor() ([]byte, []int) {
+	return file_github_provider_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *OutlineResponse) GetWorkflowStatus() string {
+	if x != nil {
+		return x.WorkflowStatus
+	}
+	return ""
+}
+
 var File_github_provider_proto protoreflect.FileDescriptor
 
 const file_github_provider_proto_rawDesc = "" +
 	"\n" +
-	"\x15github_provider.proto\x12\x0fgithub_provider\x1a\x0eprovider.proto\"*\n" +
+	"\x15github_provider.proto\x12\x0fgithub_provider\"*\n" +
 	"\x0eFetchPRRequest\x12\x18\n" +
 	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"A\n" +
 	"\x0fFetchPRResponse\x12.\n" +
-	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests2^\n" +
+	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests\"F\n" +
+	"\x0eOutlineRequest\x12\x1a\n" +
+	"\bClubName\x18\x01 \x01(\tR\bClubName\x12\x18\n" +
+	"\aUserUID\x18\x02 \x01(\tR\aUserUID\"9\n" +
+	"\x0fOutlineResponse\x12&\n" +
+	"\x0eWorkflowStatus\x18\x01 \x01(\tR\x0eWorkflowStatus2\xb3\x01\n" +
 	"\x0eGithubProvider\x12L\n" +
-	"\aFetchPR\x12\x1f.github_provider.FetchPRRequest\x1a .github_provider.FetchPRResponseB\\ZZgithub.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_providerb\x06proto3"
+	"\aFetchPR\x12\x1f.github_provider.FetchPRRequest\x1a .github_provider.FetchPRResponse\x12S\n" +
+	"\x0eRequestOutline\x12\x1f.github_provider.OutlineRequest\x1a .github_provider.OutlineResponseB\\ZZgithub.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_providerb\x06proto3"
 
 var (
 	file_github_provider_proto_rawDescOnce sync.Once
@@ -134,16 +235,20 @@ func file_github_provider_proto_rawDescGZIP() []byte {
 	return file_github_provider_proto_rawDescData
 }
 
-var file_github_provider_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_github_provider_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_github_provider_proto_goTypes = []any{
 	(*FetchPRRequest)(nil),  // 0: github_provider.FetchPRRequest
 	(*FetchPRResponse)(nil), // 1: github_provider.FetchPRResponse
+	(*OutlineRequest)(nil),  // 2: github_provider.OutlineRequest
+	(*OutlineResponse)(nil), // 3: github_provider.OutlineResponse
 }
 var file_github_provider_proto_depIdxs = []int32{
 	0, // 0: github_provider.GithubProvider.FetchPR:input_type -> github_provider.FetchPRRequest
-	1, // 1: github_provider.GithubProvider.FetchPR:output_type -> github_provider.FetchPRResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: github_provider.GithubProvider.RequestOutline:input_type -> github_provider.OutlineRequest
+	1, // 2: github_provider.GithubProvider.FetchPR:output_type -> github_provider.FetchPRResponse
+	3, // 3: github_provider.GithubProvider.RequestOutline:output_type -> github_provider.OutlineResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -160,7 +265,7 @@ func file_github_provider_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_github_provider_proto_rawDesc), len(file_github_provider_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -21,4 +21,6 @@ FROM alpine
 COPY --from=builder /app/github_provider /github_provider
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
+ENV GITHUB_TOKEN = $GITHUB_TOKEN
+
 ENTRYPOINT ["/github_provider"]

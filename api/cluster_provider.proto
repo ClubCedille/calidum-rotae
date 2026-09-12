@@ -3,7 +3,7 @@ option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/
 
 package cluster_provider;
 
-import "provider.proto";
+//import "provider.proto";
 
 
 message UserResourceRequest {

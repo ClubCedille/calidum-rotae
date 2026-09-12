@@ -7,7 +7,6 @@
 package cluster_provider
 
 import (
-	_ "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/provider"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -114,7 +113,7 @@ var File_cluster_provider_proto protoreflect.FileDescriptor
 
 const file_cluster_provider_proto_rawDesc = "" +
 	"\n" +
-	"\x16cluster_provider.proto\x12\x10cluster_provider\x1a\x0eprovider.proto\"/\n" +
+	"\x16cluster_provider.proto\x12\x10cluster_provider\"/\n" +
 	"\x13UserResourceRequest\x12\x18\n" +
 	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"P\n" +
 	"\x18GetUserResourcesResponse\x124\n" +
