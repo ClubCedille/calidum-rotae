@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/cluster-provider;cluster_provider";
+
+package cluster_provider;
+
+import "provider.proto";
+
+
+message UserResourceRequest {
+	string UserUID = 1;
+}
+
+message GetUserResourcesResponse {}
+
+
+service ClusterProvider {
+	// Gets K8s Cluster data for a specified user
+	rpc GetUserResources(UserResourceRequest) returns (GetUserResourcesResponse);
+}
