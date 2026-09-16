@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GithubProvider_FetchPR_FullMethodName        = "/github_provider.GithubProvider/FetchPR"
-	GithubProvider_RequestOutline_FullMethodName = "/github_provider.GithubProvider/RequestOutline"
+	GithubProvider_FetchPR_FullMethodName           = "/github_provider.GithubProvider/FetchPR"
+	GithubProvider_RequestDeployment_FullMethodName = "/github_provider.GithubProvider/RequestDeployment"
+	GithubProvider_AddCedilleUser_FullMethodName    = "/github_provider.GithubProvider/AddCedilleUser"
 )
 
 // GithubProviderClient is the client API for GithubProvider service.
@@ -30,7 +31,9 @@ type GithubProviderClient interface {
 	// Get User pull requests
 	FetchPR(ctx context.Context, in *FetchPRRequest, opts ...grpc.CallOption) (*FetchPRResponse, error)
 	// Add new outlines
-	RequestOutline(ctx context.Context, in *OutlineRequest, opts ...grpc.CallOption) (*OutlineResponse, error)
+	RequestDeployment(ctx context.Context, in *DeploymentRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
+	// Add new user to CEDILLE
+	AddCedilleUser(ctx context.Context, in *CedilleUserRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 }
 
 type githubProviderClient struct {
@@ -51,10 +54,20 @@ func (c *githubProviderClient) FetchPR(ctx context.Context, in *FetchPRRequest, 
 	return out, nil
 }
 
-func (c *githubProviderClient) RequestOutline(ctx context.Context, in *OutlineRequest, opts ...grpc.CallOption) (*OutlineResponse, error) {
+func (c *githubProviderClient) RequestDeployment(ctx context.Context, in *DeploymentRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OutlineResponse)
-	err := c.cc.Invoke(ctx, GithubProvider_RequestOutline_FullMethodName, in, out, cOpts...)
+	out := new(WorkflowResponse)
+	err := c.cc.Invoke(ctx, GithubProvider_RequestDeployment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *githubProviderClient) AddCedilleUser(ctx context.Context, in *CedilleUserRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkflowResponse)
+	err := c.cc.Invoke(ctx, GithubProvider_AddCedilleUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +81,9 @@ type GithubProviderServer interface {
 	// Get User pull requests
 	FetchPR(context.Context, *FetchPRRequest) (*FetchPRResponse, error)
 	// Add new outlines
-	RequestOutline(context.Context, *OutlineRequest) (*OutlineResponse, error)
+	RequestDeployment(context.Context, *DeploymentRequest) (*WorkflowResponse, error)
+	// Add new user to CEDILLE
+	AddCedilleUser(context.Context, *CedilleUserRequest) (*WorkflowResponse, error)
 	mustEmbedUnimplementedGithubProviderServer()
 }
 
@@ -82,8 +97,11 @@ type UnimplementedGithubProviderServer struct{}
 func (UnimplementedGithubProviderServer) FetchPR(context.Context, *FetchPRRequest) (*FetchPRResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FetchPR not implemented")
 }
-func (UnimplementedGithubProviderServer) RequestOutline(context.Context, *OutlineRequest) (*OutlineResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RequestOutline not implemented")
+func (UnimplementedGithubProviderServer) RequestDeployment(context.Context, *DeploymentRequest) (*WorkflowResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestDeployment not implemented")
+}
+func (UnimplementedGithubProviderServer) AddCedilleUser(context.Context, *CedilleUserRequest) (*WorkflowResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddCedilleUser not implemented")
 }
 func (UnimplementedGithubProviderServer) mustEmbedUnimplementedGithubProviderServer() {}
 func (UnimplementedGithubProviderServer) testEmbeddedByValue()                        {}
@@ -124,20 +142,38 @@ func _GithubProvider_FetchPR_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GithubProvider_RequestOutline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OutlineRequest)
+func _GithubProvider_RequestDeployment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeploymentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GithubProviderServer).RequestOutline(ctx, in)
+		return srv.(GithubProviderServer).RequestDeployment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GithubProvider_RequestOutline_FullMethodName,
+		FullMethod: GithubProvider_RequestDeployment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GithubProviderServer).RequestOutline(ctx, req.(*OutlineRequest))
+		return srv.(GithubProviderServer).RequestDeployment(ctx, req.(*DeploymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GithubProvider_AddCedilleUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CedilleUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GithubProviderServer).AddCedilleUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GithubProvider_AddCedilleUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GithubProviderServer).AddCedilleUser(ctx, req.(*CedilleUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -154,8 +190,12 @@ var GithubProvider_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GithubProvider_FetchPR_Handler,
 		},
 		{
-			MethodName: "RequestOutline",
-			Handler:    _GithubProvider_RequestOutline_Handler,
+			MethodName: "RequestDeployment",
+			Handler:    _GithubProvider_RequestDeployment_Handler,
+		},
+		{
+			MethodName: "AddCedilleUser",
+			Handler:    _GithubProvider_AddCedilleUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

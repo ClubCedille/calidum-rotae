@@ -25,6 +25,7 @@ type CalidumClient interface {
 	SendEmailRpcRequest(ctx context.Context, body []byte) (err error)
 	SendShellRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendGithubRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
+	SendCedilleUserRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendClusterRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 }
 
@@ -101,20 +102,45 @@ func (c *CalidumService) SendShellRpcRequest(ctx context.Context, body []byte) (
 }
 
 func (c *CalidumService) SendGithubRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
-	var data *github_provider.OutlineRequest
+	var data *github_provider.DeploymentRequest
 	jsonResponse = []byte("")
 	if err = json.Unmarshal(body, &data); err != nil {
 		return jsonResponse, fmt.Errorf("error binding JSON data to gRPC Github object: %s", err.Error())
 	}
 
-	resp, err := c.githubProviderService.RequestOutline(ctx, &github_provider.OutlineRequest{
-		UserUID:  data.UserUID,
+	resp, err := c.githubProviderService.RequestDeployment(ctx, &github_provider.DeploymentRequest{
 		ClubName: data.ClubName,
+		Domain:   data.Domain,
+		Workflow: data.Workflow,
+		UserUID:  data.UserUID,
 	})
 	if err != nil {
 		return jsonResponse, fmt.Errorf("error sending rpc request to Github provider: %s Response: %s", err.Error(), resp)
 	}
-	jsonResponse = []byte(resp.GetWorkflowStatus())
+	jsonResponse = []byte(resp.GetWorkflowRunUrl())
+
+	return jsonResponse, nil
+}
+
+func (c *CalidumService) SendCedilleUserRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
+	var data *github_provider.CedilleUserRequest
+	jsonResponse = []byte("")
+	if err = json.Unmarshal(body, &data); err != nil {
+		return jsonResponse, fmt.Errorf("error binding JSON data to gRPC Github object: %s", err.Error())
+	}
+
+	resp, err := c.githubProviderService.AddCedilleUser(ctx, &github_provider.CedilleUserRequest{
+		GithubUsername: data.GithubUsername,
+		GithubEmail:    data.GithubEmail,
+		TeamSre:        data.TeamSre,
+		ClusterRole:    data.ClusterRole,
+		NetdataRole:    data.NetdataRole,
+		UserUID:        data.UserUID,
+	})
+	if err != nil {
+		return jsonResponse, fmt.Errorf("error sending rpc request to Github provider: %s Response: %s", err.Error(), resp)
+	}
+	jsonResponse = []byte(resp.GetWorkflowRunUrl())
 
 	return jsonResponse, nil
 }

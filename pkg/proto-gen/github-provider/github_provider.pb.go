@@ -109,28 +109,28 @@ func (x *FetchPRResponse) GetActiveUserRequests() string {
 	return ""
 }
 
-type OutlineRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ClubName      string                 `protobuf:"bytes,1,opt,name=ClubName,proto3" json:"ClubName,omitempty"`
-	UserUID       string                 `protobuf:"bytes,2,opt,name=UserUID,proto3" json:"UserUID,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type WorkflowResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	WorkflowRunID  string                 `protobuf:"bytes,1,opt,name=WorkflowRunID,proto3" json:"WorkflowRunID,omitempty"`
+	WorkflowRunUrl string                 `protobuf:"bytes,2,opt,name=WorkflowRunUrl,proto3" json:"WorkflowRunUrl,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
-func (x *OutlineRequest) Reset() {
-	*x = OutlineRequest{}
+func (x *WorkflowResponse) Reset() {
+	*x = WorkflowResponse{}
 	mi := &file_github_provider_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *OutlineRequest) String() string {
+func (x *WorkflowResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*OutlineRequest) ProtoMessage() {}
+func (*WorkflowResponse) ProtoMessage() {}
 
-func (x *OutlineRequest) ProtoReflect() protoreflect.Message {
+func (x *WorkflowResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_github_provider_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -142,47 +142,120 @@ func (x *OutlineRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use OutlineRequest.ProtoReflect.Descriptor instead.
-func (*OutlineRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use WorkflowResponse.ProtoReflect.Descriptor instead.
+func (*WorkflowResponse) Descriptor() ([]byte, []int) {
 	return file_github_provider_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *OutlineRequest) GetClubName() string {
+func (x *WorkflowResponse) GetWorkflowRunID() string {
+	if x != nil {
+		return x.WorkflowRunID
+	}
+	return ""
+}
+
+func (x *WorkflowResponse) GetWorkflowRunUrl() string {
+	if x != nil {
+		return x.WorkflowRunUrl
+	}
+	return ""
+}
+
+type DeploymentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ClubName      string                 `protobuf:"bytes,1,opt,name=ClubName,proto3" json:"ClubName,omitempty"`
+	Domain        string                 `protobuf:"bytes,2,opt,name=Domain,proto3" json:"Domain,omitempty"`
+	Workflow      string                 `protobuf:"bytes,3,opt,name=Workflow,proto3" json:"Workflow,omitempty"`
+	UserUID       string                 `protobuf:"bytes,4,opt,name=UserUID,proto3" json:"UserUID,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeploymentRequest) Reset() {
+	*x = DeploymentRequest{}
+	mi := &file_github_provider_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentRequest) ProtoMessage() {}
+
+func (x *DeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_github_provider_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentRequest.ProtoReflect.Descriptor instead.
+func (*DeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_github_provider_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *DeploymentRequest) GetClubName() string {
 	if x != nil {
 		return x.ClubName
 	}
 	return ""
 }
 
-func (x *OutlineRequest) GetUserUID() string {
+func (x *DeploymentRequest) GetDomain() string {
+	if x != nil {
+		return x.Domain
+	}
+	return ""
+}
+
+func (x *DeploymentRequest) GetWorkflow() string {
+	if x != nil {
+		return x.Workflow
+	}
+	return ""
+}
+
+func (x *DeploymentRequest) GetUserUID() string {
 	if x != nil {
 		return x.UserUID
 	}
 	return ""
 }
 
-type OutlineResponse struct {
+type CedilleUserRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	WorkflowStatus string                 `protobuf:"bytes,1,opt,name=WorkflowStatus,proto3" json:"WorkflowStatus,omitempty"`
+	GithubUsername string                 `protobuf:"bytes,1,opt,name=GithubUsername,proto3" json:"GithubUsername,omitempty"`
+	GithubEmail    string                 `protobuf:"bytes,2,opt,name=GithubEmail,proto3" json:"GithubEmail,omitempty"`
+	ClusterRole    string                 `protobuf:"bytes,3,opt,name=ClusterRole,proto3" json:"ClusterRole,omitempty"`
+	NetdataRole    string                 `protobuf:"bytes,4,opt,name=NetdataRole,proto3" json:"NetdataRole,omitempty"`
+	TeamSre        bool                   `protobuf:"varint,5,opt,name=TeamSre,proto3" json:"TeamSre,omitempty"`
+	UserUID        string                 `protobuf:"bytes,6,opt,name=UserUID,proto3" json:"UserUID,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
-func (x *OutlineResponse) Reset() {
-	*x = OutlineResponse{}
-	mi := &file_github_provider_proto_msgTypes[3]
+func (x *CedilleUserRequest) Reset() {
+	*x = CedilleUserRequest{}
+	mi := &file_github_provider_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *OutlineResponse) String() string {
+func (x *CedilleUserRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*OutlineResponse) ProtoMessage() {}
+func (*CedilleUserRequest) ProtoMessage() {}
 
-func (x *OutlineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_github_provider_proto_msgTypes[3]
+func (x *CedilleUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_github_provider_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -193,14 +266,49 @@ func (x *OutlineResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use OutlineResponse.ProtoReflect.Descriptor instead.
-func (*OutlineResponse) Descriptor() ([]byte, []int) {
-	return file_github_provider_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use CedilleUserRequest.ProtoReflect.Descriptor instead.
+func (*CedilleUserRequest) Descriptor() ([]byte, []int) {
+	return file_github_provider_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *OutlineResponse) GetWorkflowStatus() string {
+func (x *CedilleUserRequest) GetGithubUsername() string {
 	if x != nil {
-		return x.WorkflowStatus
+		return x.GithubUsername
+	}
+	return ""
+}
+
+func (x *CedilleUserRequest) GetGithubEmail() string {
+	if x != nil {
+		return x.GithubEmail
+	}
+	return ""
+}
+
+func (x *CedilleUserRequest) GetClusterRole() string {
+	if x != nil {
+		return x.ClusterRole
+	}
+	return ""
+}
+
+func (x *CedilleUserRequest) GetNetdataRole() string {
+	if x != nil {
+		return x.NetdataRole
+	}
+	return ""
+}
+
+func (x *CedilleUserRequest) GetTeamSre() bool {
+	if x != nil {
+		return x.TeamSre
+	}
+	return false
+}
+
+func (x *CedilleUserRequest) GetUserUID() string {
+	if x != nil {
+		return x.UserUID
 	}
 	return ""
 }
@@ -213,15 +321,26 @@ const file_github_provider_proto_rawDesc = "" +
 	"\x0eFetchPRRequest\x12\x18\n" +
 	"\aUserUID\x18\x01 \x01(\tR\aUserUID\"A\n" +
 	"\x0fFetchPRResponse\x12.\n" +
-	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests\"F\n" +
-	"\x0eOutlineRequest\x12\x1a\n" +
-	"\bClubName\x18\x01 \x01(\tR\bClubName\x12\x18\n" +
-	"\aUserUID\x18\x02 \x01(\tR\aUserUID\"9\n" +
-	"\x0fOutlineResponse\x12&\n" +
-	"\x0eWorkflowStatus\x18\x01 \x01(\tR\x0eWorkflowStatus2\xb3\x01\n" +
+	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests\"`\n" +
+	"\x10WorkflowResponse\x12$\n" +
+	"\rWorkflowRunID\x18\x01 \x01(\tR\rWorkflowRunID\x12&\n" +
+	"\x0eWorkflowRunUrl\x18\x02 \x01(\tR\x0eWorkflowRunUrl\"}\n" +
+	"\x11DeploymentRequest\x12\x1a\n" +
+	"\bClubName\x18\x01 \x01(\tR\bClubName\x12\x16\n" +
+	"\x06Domain\x18\x02 \x01(\tR\x06Domain\x12\x1a\n" +
+	"\bWorkflow\x18\x03 \x01(\tR\bWorkflow\x12\x18\n" +
+	"\aUserUID\x18\x04 \x01(\tR\aUserUID\"\xd6\x01\n" +
+	"\x12CedilleUserRequest\x12&\n" +
+	"\x0eGithubUsername\x18\x01 \x01(\tR\x0eGithubUsername\x12 \n" +
+	"\vGithubEmail\x18\x02 \x01(\tR\vGithubEmail\x12 \n" +
+	"\vClusterRole\x18\x03 \x01(\tR\vClusterRole\x12 \n" +
+	"\vNetdataRole\x18\x04 \x01(\tR\vNetdataRole\x12\x18\n" +
+	"\aTeamSre\x18\x05 \x01(\bR\aTeamSre\x12\x18\n" +
+	"\aUserUID\x18\x06 \x01(\tR\aUserUID2\x94\x02\n" +
 	"\x0eGithubProvider\x12L\n" +
-	"\aFetchPR\x12\x1f.github_provider.FetchPRRequest\x1a .github_provider.FetchPRResponse\x12S\n" +
-	"\x0eRequestOutline\x12\x1f.github_provider.OutlineRequest\x1a .github_provider.OutlineResponseB\\ZZgithub.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_providerb\x06proto3"
+	"\aFetchPR\x12\x1f.github_provider.FetchPRRequest\x1a .github_provider.FetchPRResponse\x12Z\n" +
+	"\x11RequestDeployment\x12\".github_provider.DeploymentRequest\x1a!.github_provider.WorkflowResponse\x12X\n" +
+	"\x0eAddCedilleUser\x12#.github_provider.CedilleUserRequest\x1a!.github_provider.WorkflowResponseB\\ZZgithub.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider;github_providerb\x06proto3"
 
 var (
 	file_github_provider_proto_rawDescOnce sync.Once
@@ -235,20 +354,23 @@ func file_github_provider_proto_rawDescGZIP() []byte {
 	return file_github_provider_proto_rawDescData
 }
 
-var file_github_provider_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_github_provider_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_github_provider_proto_goTypes = []any{
-	(*FetchPRRequest)(nil),  // 0: github_provider.FetchPRRequest
-	(*FetchPRResponse)(nil), // 1: github_provider.FetchPRResponse
-	(*OutlineRequest)(nil),  // 2: github_provider.OutlineRequest
-	(*OutlineResponse)(nil), // 3: github_provider.OutlineResponse
+	(*FetchPRRequest)(nil),     // 0: github_provider.FetchPRRequest
+	(*FetchPRResponse)(nil),    // 1: github_provider.FetchPRResponse
+	(*WorkflowResponse)(nil),   // 2: github_provider.WorkflowResponse
+	(*DeploymentRequest)(nil),  // 3: github_provider.DeploymentRequest
+	(*CedilleUserRequest)(nil), // 4: github_provider.CedilleUserRequest
 }
 var file_github_provider_proto_depIdxs = []int32{
 	0, // 0: github_provider.GithubProvider.FetchPR:input_type -> github_provider.FetchPRRequest
-	2, // 1: github_provider.GithubProvider.RequestOutline:input_type -> github_provider.OutlineRequest
-	1, // 2: github_provider.GithubProvider.FetchPR:output_type -> github_provider.FetchPRResponse
-	3, // 3: github_provider.GithubProvider.RequestOutline:output_type -> github_provider.OutlineResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	3, // 1: github_provider.GithubProvider.RequestDeployment:input_type -> github_provider.DeploymentRequest
+	4, // 2: github_provider.GithubProvider.AddCedilleUser:input_type -> github_provider.CedilleUserRequest
+	1, // 3: github_provider.GithubProvider.FetchPR:output_type -> github_provider.FetchPRResponse
+	2, // 4: github_provider.GithubProvider.RequestDeployment:output_type -> github_provider.WorkflowResponse
+	2, // 5: github_provider.GithubProvider.AddCedilleUser:output_type -> github_provider.WorkflowResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -265,7 +387,7 @@ func file_github_provider_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_github_provider_proto_rawDesc), len(file_github_provider_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

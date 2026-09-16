@@ -5,7 +5,6 @@ package github_provider;
 
 //import "provider.proto";
 
-
 message FetchPRRequest {
 	string UserUID = 1;
 }
@@ -14,19 +13,35 @@ message FetchPRResponse {
     string ActiveUserRequests = 1;
 }
 
-message OutlineRequest {
-  string ClubName = 1;
-  string UserUID = 2;
+message WorkflowResponse {
+    string WorkflowRunID = 1;
+    string WorkflowRunUrl = 2;
 }
 
-message OutlineResponse {
-  string WorkflowStatus = 1;
+message DeploymentRequest {
+    string ClubName = 1;
+    string Domain = 2;
+    string Workflow = 3;
+    string UserUID = 4;
 }
+
+message CedilleUserRequest {
+  string GithubUsername = 1;
+  string GithubEmail = 2;
+  string ClusterRole = 3;
+  string NetdataRole = 4;
+  bool TeamSre = 5;
+  string UserUID = 6;
+}
+
 
 service GithubProvider {
 	// Get User pull requests
 	rpc FetchPR(FetchPRRequest) returns (FetchPRResponse);
 
-  // Add new outlines
-  rpc RequestOutline(OutlineRequest) returns (OutlineResponse);
+    // Add new outlines
+    rpc RequestDeployment(DeploymentRequest) returns (WorkflowResponse);
+
+    // Add new user to CEDILLE
+    rpc AddCedilleUser(CedilleUserRequest) returns (WorkflowResponse);
 }

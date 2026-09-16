@@ -28,24 +28,27 @@ const (
 
 	CALIDUM_ROTAE_TRACER_NAME = "calidum-rotae-tracer"
 
-	EMAIL_POST_REQUEST   = "/email"
-	DISCORD_POST_REQUEST = "/discord"
-	SHELL_POST_REQUEST   = "/command"
-	CLUSTER_POST_REQUEST = "/cluster"
-	GITHUB_POST_REQUEST  = "/github"
-	DEFAULT_POST_REQUEST = "/"
+	EMAIL_POST_REQUEST       = "/email"
+	DISCORD_POST_REQUEST     = "/discord"
+	SHELL_POST_REQUEST       = "/command"
+	CLUSTER_POST_REQUEST     = "/cluster"
+	GITHUB_POST_REQUEST      = "/github"
+	GITHUB_USER_POST_REQUEST = "/github/user"
+	DEFAULT_POST_REQUEST     = "/"
 
 	DISCORD_RPC_FUNC = "SendDiscordRpcRequest"
 	EMAIL_RPC_FUNC   = "SendEmailRpcRequest"
 	SHELL_RPC_FUNC   = "SendShellRpcRequest"
 	CLUSTER_RPC_FUNC = "SendClusterRpcRequest"
-	GITHUB_RPC_FUNC  = "SendGithubRpcRequest"
+
+	REQUEST_DEPLOYMENT_RPC_FUNC = "RequestDeployment"
+	ADD_CEDILLE_USER_RPC_FUNC   = "AddCedilleUser"
 
 	DISCORD_END_OF_SPAN = "Discord message sent!"
 	EMAIL_END_OF_SPAN   = "Email sent!"
 	SHELL_END_OF_SPAN   = "Shell command sent!"
-	CLUSTER_END_OF_SPAN = "Shell command sent!"
-	GITHUB_END_OF_SPAN  = "Shell command sent!"
+	CLUSTER_END_OF_SPAN = "Cluster resources fetched!"
+	GITHUB_END_OF_SPAN  = "Github workflow triggered!"
 	OK_SPAN             = "HTTP request sent!"
 )
 
@@ -79,7 +82,8 @@ func initHTTPServerHandler(ctx context.Context, v *viper.Viper, services calidum
 	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services, calidumRotaeTracer) })
 	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services, calidumRotaeTracer) })
 	g.POST("/command", func(g *gin.Context) { shellPostRequest(g, services, calidumRotaeTracer) })
-	g.POST("/github", func(g *gin.Context) { githubPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(GITHUB_POST_REQUEST, func(g *gin.Context) { githubPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(GITHUB_USER_POST_REQUEST, func(g *gin.Context) { githubUserPostRequest(g, services, calidumRotaeTracer) })
 	g.POST("/cluster", func(g *gin.Context) { clusterPostRequest(g, services, calidumRotaeTracer) })
 
 	return g
@@ -195,31 +199,11 @@ func sendShellRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 	return ctx
 }
 
-func sendGithubRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
-	ctx, githubGrpcSpan := tracer.GrpcSpan(ctx, GITHUB_RPC_FUNC, GITHUB_RPC_FUNC, instrumentation.GITHUB_PROVIDER_SERVICE)
-	defer githubGrpcSpan.End()
-
-	response, err := services.SendGithubRpcRequest(ctx, body)
-	fmt.Println(string(response))
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		githubGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
-		githubGrpcSpan.RecordError(err)
-		githubGrpcSpan.SetStatus(codes.Error, err.Error())
-	} else {
-		g.JSON(http.StatusOK, gin.H{"response": string(response)})
-		githubGrpcSpan.SetStatus(codes.Ok, GITHUB_END_OF_SPAN)
-	}
-
-	return ctx
-}
-
 func sendClusterRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
 	ctx, clusterGrpcSpan := tracer.GrpcSpan(ctx, CLUSTER_RPC_FUNC, CLUSTER_RPC_FUNC, instrumentation.CLUSTER_PROVIDER_SERVICE)
 	defer clusterGrpcSpan.End()
 
 	response, err := services.SendClusterRpcRequest(ctx, body)
-	fmt.Println(string(response))
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		clusterGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
@@ -228,6 +212,48 @@ func sendClusterRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []b
 	} else {
 		g.JSON(http.StatusOK, gin.H{"response": string(response)})
 		clusterGrpcSpan.SetStatus(codes.Ok, CLUSTER_END_OF_SPAN)
+	}
+
+	return ctx
+}
+
+func sendGithubRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
+	ctx, githubGrpcSpan := tracer.GrpcSpan(ctx, REQUEST_DEPLOYMENT_RPC_FUNC, REQUEST_DEPLOYMENT_RPC_FUNC, instrumentation.GITHUB_PROVIDER_SERVICE)
+	defer githubGrpcSpan.End()
+
+	ctxLogger := logger.NewFromContextOrDefault(ctx)
+	response, err := services.SendGithubRpcRequest(ctx, body)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		githubGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		githubGrpcSpan.RecordError(err)
+		githubGrpcSpan.SetStatus(codes.Error, err.Error())
+		ctxLogger.WithError(err).Error("github deployment dispatch failed")
+	} else {
+		g.JSON(http.StatusOK, gin.H{"response": string(response)})
+		githubGrpcSpan.SetStatus(codes.Ok, GITHUB_END_OF_SPAN)
+		ctxLogger.Info("github deployment dispatch succeeded")
+	}
+
+	return ctx
+}
+
+func sendCedilleUserRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byte, tracer instrumentation.Traces, services calidum.CalidumClient) context.Context {
+	ctx, githubGrpcSpan := tracer.GrpcSpan(ctx, ADD_CEDILLE_USER_RPC_FUNC, ADD_CEDILLE_USER_RPC_FUNC, instrumentation.GITHUB_PROVIDER_SERVICE)
+	defer githubGrpcSpan.End()
+
+	ctxLogger := logger.NewFromContextOrDefault(ctx)
+	response, err := services.SendCedilleUserRpcRequest(ctx, body)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		githubGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		githubGrpcSpan.RecordError(err)
+		githubGrpcSpan.SetStatus(codes.Error, err.Error())
+		ctxLogger.WithError(err).Error("cedille user workflow dispatch failed")
+	} else {
+		g.JSON(http.StatusOK, gin.H{"response": string(response)})
+		githubGrpcSpan.SetStatus(codes.Ok, GITHUB_END_OF_SPAN)
+		ctxLogger.Info("cedille user workflow dispatch succeeded")
 	}
 
 	return ctx
@@ -296,7 +322,6 @@ func shellPostRequest(g *gin.Context, services calidum.CalidumClient, tracer ins
 }
 
 func clusterPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
-	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
 	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, CLUSTER_POST_REQUEST)
@@ -317,7 +342,6 @@ func clusterPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 }
 
 func githubPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
-	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
 	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, GITHUB_POST_REQUEST)
@@ -333,6 +357,26 @@ func githubPostRequest(g *gin.Context, services calidum.CalidumClient, tracer in
 	}
 
 	sendGithubRpcRequestWithSpan(ctx, g, body, tracer, services)
+
+	httpSpan.SetStatus(codes.Ok, OK_SPAN)
+}
+
+func githubUserPostRequest(g *gin.Context, services calidum.CalidumClient, tracer instrumentation.Traces) {
+	ctx := g.Request.Context()
+
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, GITHUB_USER_POST_REQUEST)
+	defer httpSpan.End()
+
+	if !authenticationIsValid(g, httpSpan) {
+		return
+	}
+
+	body, err := getRequestBody(g, httpSpan)
+	if err != nil {
+		return
+	}
+
+	sendCedilleUserRpcRequestWithSpan(ctx, g, body, tracer, services)
 
 	httpSpan.SetStatus(codes.Ok, OK_SPAN)
 }
