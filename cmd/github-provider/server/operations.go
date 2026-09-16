@@ -52,18 +52,17 @@ func (server *Server) RequestOutline(ctx context.Context, message *github_provid
 	}
 
 	client := &http.Client {
-		CheckRedirect: redirectPolicyFunc,
 	}
 
 	outlineRequest := RequestOutlineBody{
-		Ref: "main", 
+		Ref: "main",
 		Inputs: OutlineInputs{
 			NomClub: message.GetClubName(),
-		}
+		},
 	}
-	
+
 	payload := new(bytes.Buffer)
-	
+
 	err := json.NewEncoder(payload).Encode(outlineRequest)
 
 	if err != nil {
@@ -93,7 +92,7 @@ func (server *Server) RequestOutline(ctx context.Context, message *github_provid
 	}
 
 	log.Printf("Outline Workflow triggered")
-	return &github_provider.OutlineResponse{}, nil
+	return &github_provider.OutlineResponse{ WorkflowStatus: string(respBody)}, nil
 
 
 }

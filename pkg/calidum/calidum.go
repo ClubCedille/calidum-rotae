@@ -5,19 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cluster_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/cluster-provider"
 	discord_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/discord-provider"
 	email_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/email-provider"
-	shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
 	github_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider"
-	cluster_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/cluster-provider"
+	shell_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/shell-provider"
 )
 
 type CalidumService struct {
 	discordProviderService discord_provider.DiscordProviderClient
 	emailProviderService   email_provider.EmailProviderClient
 	shellProviderService   shell_provider.ShellProviderClient
-	githubProviderService   github_provider.GithubProviderClient
-	clusterProviderService   cluster_provider.ClusterProviderClient
+	githubProviderService  github_provider.GithubProviderClient
+	clusterProviderService cluster_provider.ClusterProviderClient
 }
 
 type CalidumClient interface {
@@ -26,7 +26,6 @@ type CalidumClient interface {
 	SendShellRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendGithubRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendClusterRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
-
 }
 
 var _ CalidumClient = &CalidumService{}
@@ -35,8 +34,8 @@ type Dependencies struct {
 	DiscordProviderService discord_provider.DiscordProviderClient
 	EmailProviderService   email_provider.EmailProviderClient
 	ShellProviderService   shell_provider.ShellProviderClient
-	GithubProviderService   github_provider.GithubProviderClient
-	ClusterProviderService   cluster_provider.ClusterProviderClient
+	GithubProviderService  github_provider.GithubProviderClient
+	ClusterProviderService cluster_provider.ClusterProviderClient
 }
 
 func NewCalidumService(deps Dependencies) *CalidumService {
@@ -44,8 +43,8 @@ func NewCalidumService(deps Dependencies) *CalidumService {
 		discordProviderService: deps.DiscordProviderService,
 		emailProviderService:   deps.EmailProviderService,
 		shellProviderService:   deps.ShellProviderService,
-		githubProviderService:   deps.GithubProviderService,
-		clusterProviderService:   deps.ClusterProviderService,
+		githubProviderService:  deps.GithubProviderService,
+		clusterProviderService: deps.ClusterProviderService,
 	}
 }
 
@@ -98,23 +97,24 @@ func (c *CalidumService) SendShellRpcRequest(ctx context.Context, body []byte) (
 		return []byte(""), fmt.Errorf("error sending rpc request to shell provider: %s", err.Error())
 	}
 
-	return []byte(resp.String()), nil
+	return []byte(resp.GetCommandResponse()), nil
 }
 
 func (c *CalidumService) SendGithubRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
-	var data *github_provider.FetchPRRequest
+	var data *github_provider.OutlineRequest
 	jsonResponse = []byte("")
 	if err = json.Unmarshal(body, &data); err != nil {
 		return jsonResponse, fmt.Errorf("error binding JSON data to gRPC Github object: %s", err.Error())
 	}
 
-	resp, err := c.githubProviderService.FetchPR(ctx, &github_provider.FetchPRRequest{
-		UserUID:         data.UserUID,
+	resp, err := c.githubProviderService.RequestOutline(ctx, &github_provider.OutlineRequest{
+		UserUID:  data.UserUID,
+		ClubName: data.ClubName,
 	})
-	jsonResponse = []byte(resp.String())
 	if err != nil {
 		return jsonResponse, fmt.Errorf("error sending rpc request to Github provider: %s Response: %s", err.Error(), resp)
 	}
+	jsonResponse = []byte(resp.GetWorkflowStatus())
 
 	return jsonResponse, nil
 }
@@ -129,10 +129,10 @@ func (c *CalidumService) SendClusterRpcRequest(ctx context.Context, body []byte)
 	response, err := c.clusterProviderService.GetUserResources(ctx, &cluster_provider.UserResourceRequest{
 		UserUID: data.UserUID,
 	})
-	resp = []byte(response.String())
 	if err != nil {
 		return resp, fmt.Errorf("error sending rpc request to cluster provider: %s Response: %s", err.Error(), resp)
 	}
+	resp = []byte(response.GetUserResourcesResponse())
 
 	return resp, nil
 }

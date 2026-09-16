@@ -188,7 +188,7 @@ func sendShellRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 		shellGrpcSpan.RecordError(err)
 		shellGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
-		g.JSON(http.StatusOK, gin.H{"response": response})
+		g.JSON(http.StatusOK, gin.H{"response": string(response)})
 		shellGrpcSpan.SetStatus(codes.Ok, SHELL_END_OF_SPAN)
 	}
 
@@ -207,7 +207,7 @@ func sendGithubRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []by
 		githubGrpcSpan.RecordError(err)
 		githubGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
-		g.JSON(http.StatusOK, gin.H{"response": response})
+		g.JSON(http.StatusOK, gin.H{"response": string(response)})
 		githubGrpcSpan.SetStatus(codes.Ok, GITHUB_END_OF_SPAN)
 	}
 
@@ -226,7 +226,7 @@ func sendClusterRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []b
 		clusterGrpcSpan.RecordError(err)
 		clusterGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
-		g.JSON(http.StatusOK, gin.H{"response": response})
+		g.JSON(http.StatusOK, gin.H{"response": string(response)})
 		clusterGrpcSpan.SetStatus(codes.Ok, CLUSTER_END_OF_SPAN)
 	}
 
@@ -299,7 +299,7 @@ func clusterPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
-	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, SHELL_POST_REQUEST)
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, CLUSTER_POST_REQUEST)
 	defer httpSpan.End()
 
 	if !authenticationIsValid(g, httpSpan) {
@@ -320,7 +320,7 @@ func githubPostRequest(g *gin.Context, services calidum.CalidumClient, tracer in
 	fmt.Println("Received REQUEST")
 	ctx := g.Request.Context()
 
-	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, SHELL_POST_REQUEST)
+	ctx, httpSpan := tracer.HttpPostSpan(ctx, g, GITHUB_POST_REQUEST)
 	defer httpSpan.End()
 
 	if !authenticationIsValid(g, httpSpan) {

@@ -25,9 +25,17 @@ func (f *fakeCalidumClient) SendEmailRpcRequest(context.Context, []byte) error {
 	return nil
 }
 
-func (f *fakeCalidumClient) SendShellRpcRequest(_ context.Context, body []byte) (string, error) {
+func (f *fakeCalidumClient) SendShellRpcRequest(_ context.Context, body []byte) ([]byte, error) {
 	f.shellRequest = string(body)
-	return f.shellResponse, nil
+	return []byte(f.shellResponse), nil
+}
+
+func (f *fakeCalidumClient) SendGithubRpcRequest(context.Context, []byte) ([]byte, error) {
+	return nil, nil
+}
+
+func (f *fakeCalidumClient) SendClusterRpcRequest(context.Context, []byte) ([]byte, error) {
+	return nil, nil
 }
 
 func TestShellPostRequestReturnsDirectJSONResponse(t *testing.T) {

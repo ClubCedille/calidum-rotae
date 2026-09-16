@@ -84,8 +84,8 @@ services:
       - 8000
     networks:
       - microservices
-    # environment:
-    #   K8s_SERVICE_ACCOUNT: ${K8s_SERVICE_ACCOUNT}
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
     entrypoint: [
       "/github_provider",
       "--port", "8000",
