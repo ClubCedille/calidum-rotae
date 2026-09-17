@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	github_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider"
 )
@@ -26,6 +27,12 @@ const defaultWorkflowRef = "main"
 type workflowDispatchBody struct {
 	Ref    string            `json:"ref,omitempty"`
 	Inputs map[string]string `json:"inputs,omitempty"`
+}
+
+type workflowDispatchResponse struct {
+	WorkflowRunId string `json:"workflow_run_id,omitempty"`
+	RunUrl        string `json:"run_url,omitempty"`
+	HtmlUrl       string `json:"html_url,omitempty"`
 }
 
 type Server struct {
@@ -51,7 +58,7 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 		return &github_provider.WorkflowResponse{}, fmt.Errorf("unknown workflow: %s", message.GetWorkflow())
 	}
 
-	runURL, err := dispatchWorkflow(ctx, url, map[string]string{
+	resp, err := dispatchWorkflow(ctx, url, map[string]string{
 		"nom_club": message.GetClubName(),
 		"domaine":  message.GetDomain(),
 	})
@@ -60,11 +67,11 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 	}
 
 	log.Printf("%s workflow triggered", message.GetWorkflow())
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: runURL}, nil
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: resp}, nil
 }
 
 func (server *Server) AddCedilleUser(ctx context.Context, message *github_provider.CedilleUserRequest) (*github_provider.WorkflowResponse, error) {
-	runURL, err := dispatchWorkflow(ctx, CEDILLE_USER_WORKFLOW_URL, map[string]string{
+	resp, err := dispatchWorkflow(ctx, CEDILLE_USER_WORKFLOW_URL, map[string]string{
 		"github_username": message.GetGithubUsername(),
 		"github_email":    message.GetGithubEmail(),
 		"team_sre":        strconv.FormatBool(message.GetTeamSre()),
@@ -76,8 +83,13 @@ func (server *Server) AddCedilleUser(ctx context.Context, message *github_provid
 	}
 
 	log.Printf("Cedille user workflow triggered for %s", message.GetGithubUsername())
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: runURL}, nil
-}
+	var workflowResp workflowDispatchResponse
+    err = json.Unmarshal([]byte(resp), &workflowResp)
+
+	if err != nil {
+		return &github_provider.WorkflowResponse{}, err
+	}
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: workflowResp.WorkflowRunId}, nil}
 
 func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string) (string, error) {
 	token, found := os.LookupEnv(ENV_GITHUB_TOKEN)
@@ -115,5 +127,5 @@ func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string)
 		return "", fmt.Errorf("workflow dispatch failed with status %d: %s", resp.StatusCode, string(respBody))
 	}
 
-	return resp.Header.Get("Location"), nil
+	return string(respBody), nil
 }

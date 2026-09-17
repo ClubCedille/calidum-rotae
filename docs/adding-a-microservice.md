@@ -107,7 +107,7 @@ The github provider distinguishes *operations* from *workflows*:
 
 - **`RequestDeployment`** — one RPC that picks a workflow to run via the
   `Workflow` field (`"outline"`, `"grav"`, ...). Add a workflow here when the
-  new workflow fits the existing deployment path (club name + domain).
+  new workflow fits the existing deployment path.
 - **Dedicated RPCs** (e.g. `AddCedilleUser`) — a new RPC when the workflow has
   a different input shape from deployments.
 
@@ -119,9 +119,11 @@ In `cmd/github-provider/server/operations.go`:
    `https://api.github.com/repos/clubCedille/k8s-shared/actions/workflows/<file>.yml/dispatches`.
 2. Add a `"<name>": <URL>` entry to the `workflowURLs` map in
    `RequestDeployment`.
-3. Add the workflow's expected inputs to the `Inputs` map sent to
-   `dispatchWorkflow`. Input keys must match the workflow's
-   `workflow_dispatch.inputs` **exactly** or GitHub returns `422`.
+3. All deployment workflows share the same inputs as `grav` (`nom_club` +
+   `domaine`); they are sent to `dispatchWorkflow` in a single map. Input keys
+   must match each workflow's `workflow_dispatch.inputs` **exactly** or GitHub
+   returns `422`. If a future workflow needs different inputs, give it a
+   dedicated RPC (like `AddCedilleUser`) instead.
 
 ### `AddCedilleUser` (example of a dedicated RPC)
 
@@ -163,9 +165,10 @@ HTTP routes: `POST /github` (deployment, body carries `"workflow"`), and
 
 ### GitHub dispatch semantics baked into `dispatchWorkflow`
 
-- On success, GitHub returns **204 No Content** with a `Location` header
-  pointing to the created run; that URL is returned in `WorkflowRunUrl`.
-  Do not expect a body — there is none.
+- On success, GitHub returns **204 No Content** with no body. The dispatch URL
+  (from the response's `Location` header, if GitHub sets one) is returned in
+  `WorkflowRunUrl`; there is no run metadata to fetch — a 204 is an
+  acknowledgment, not a resource.
 - Non-2xx responses (e.g. `422` for missing/unexpected inputs, `401` for a bad
   token) are returned as errors, so callers see why the dispatch failed.
 - Requires the `GITHUB_TOKEN` env var (wired from `.env` in docker-compose).
