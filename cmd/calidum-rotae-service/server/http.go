@@ -79,12 +79,12 @@ func initHTTPServerHandler(ctx context.Context, v *viper.Viper, services calidum
 	calidumRotaeTracer.CalidumRotaeTracer = otel.Tracer(CALIDUM_ROTAE_TRACER_NAME)
 
 	g.POST("/", func(g *gin.Context) { defaultPostRequest(g, services, calidumRotaeTracer) })
-	g.POST("/discord", func(g *gin.Context) { discordPostRequest(g, services, calidumRotaeTracer) })
-	g.POST("/email", func(g *gin.Context) { emailPostRequest(g, services, calidumRotaeTracer) })
-	g.POST("/command", func(g *gin.Context) { shellPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(DISCORD_POST_REQUEST, func(g *gin.Context) { discordPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(EMAIL_POST_REQUEST, func(g *gin.Context) { emailPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(SHELL_POST_REQUEST, func(g *gin.Context) { shellPostRequest(g, services, calidumRotaeTracer) })
 	g.POST(GITHUB_POST_REQUEST, func(g *gin.Context) { githubPostRequest(g, services, calidumRotaeTracer) })
 	g.POST(GITHUB_USER_POST_REQUEST, func(g *gin.Context) { githubUserPostRequest(g, services, calidumRotaeTracer) })
-	g.POST("/cluster", func(g *gin.Context) { clusterPostRequest(g, services, calidumRotaeTracer) })
+	g.POST(CLUSTER_POST_REQUEST, func(g *gin.Context) { clusterPostRequest(g, services, calidumRotaeTracer) })
 
 	return g
 }

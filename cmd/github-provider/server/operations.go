@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	github_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider"
 )
@@ -30,7 +29,7 @@ type workflowDispatchBody struct {
 }
 
 type workflowDispatchResponse struct {
-	WorkflowRunId string `json:"workflow_run_id,omitempty"`
+	WorkflowRunId int `json:"workflow_run_id,omitempty"`
 	RunUrl        string `json:"run_url,omitempty"`
 	HtmlUrl       string `json:"html_url,omitempty"`
 }
@@ -89,7 +88,7 @@ func (server *Server) AddCedilleUser(ctx context.Context, message *github_provid
 	if err != nil {
 		return &github_provider.WorkflowResponse{}, err
 	}
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: workflowResp.WorkflowRunId}, nil}
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: int32(workflowResp.WorkflowRunId)}, nil}
 
 func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string) (string, error) {
 	token, found := os.LookupEnv(ENV_GITHUB_TOKEN)
