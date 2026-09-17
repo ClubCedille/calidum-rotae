@@ -66,7 +66,14 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 	}
 
 	log.Printf("%s workflow triggered", message.GetWorkflow())
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: resp}, nil
+
+	var workflowResp workflowDispatchResponse
+    err = json.Unmarshal([]byte(resp), &workflowResp)
+
+	if err != nil {
+		return &github_provider.WorkflowResponse{}, err
+	}
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: int32(workflowResp.WorkflowRunId)}, nil
 }
 
 func (server *Server) AddCedilleUser(ctx context.Context, message *github_provider.CedilleUserRequest) (*github_provider.WorkflowResponse, error) {
