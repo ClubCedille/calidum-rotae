@@ -50,6 +50,8 @@ const (
 	CLUSTER_END_OF_SPAN = "Cluster resources fetched!"
 	GITHUB_END_OF_SPAN  = "Github workflow triggered!"
 	OK_SPAN             = "HTTP request sent!"
+
+	grpcStatusCode string = "rpc.grpc.status_code"
 )
 
 func InitHTTPServerFromViper(ctx context.Context, v *viper.Viper, services calidum.CalidumClient) (*serverutils.HttpServer, error) {
@@ -154,7 +156,7 @@ func sendEmailRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 	err := services.SendEmailRpcRequest(ctx, body)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		emailProviderGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		emailProviderGrpcSpan.SetAttributes(attribute.Int(grpcStatusCode, 500))
 		emailProviderGrpcSpan.RecordError(err)
 		emailProviderGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
@@ -171,7 +173,7 @@ func sendDiscordRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []b
 	err := services.SendDiscordRpcRequest(ctx, body)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		discordGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		discordGrpcSpan.SetAttributes(attribute.Int(grpcStatusCode, 500))
 		discordGrpcSpan.RecordError(err)
 		discordGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
@@ -188,7 +190,7 @@ func sendShellRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []byt
 	response, err := services.SendShellRpcRequest(ctx, body)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		shellGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		shellGrpcSpan.SetAttributes(attribute.Int(grpcStatusCode, 500))
 		shellGrpcSpan.RecordError(err)
 		shellGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
@@ -206,7 +208,7 @@ func sendClusterRpcRequestWithSpan(ctx context.Context, g *gin.Context, body []b
 	response, err := services.SendClusterRpcRequest(ctx, body)
 	if err != nil {
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		clusterGrpcSpan.SetAttributes(attribute.Int("rpc.grpc.status_code", 500))
+		clusterGrpcSpan.SetAttributes(attribute.Int(grpcStatusCode, 500))
 		clusterGrpcSpan.RecordError(err)
 		clusterGrpcSpan.SetStatus(codes.Error, err.Error())
 	} else {
@@ -402,4 +404,5 @@ func defaultPostRequest(g *gin.Context, services calidum.CalidumClient, tracer i
 	sendEmailRpcRequestWithSpan(ctx, g, body, tracer, services)
 
 	httpSpan.SetStatus(codes.Ok, OK_SPAN)
+
 }
