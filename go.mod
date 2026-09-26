@@ -8,6 +8,7 @@ require (
 	github.com/gin-contrib/cors v1.7.9
 	github.com/gin-gonic/gin v1.12.0
 	github.com/resend/resend-go/v2 v2.28.0
+	github.com/resend/resend-go/v4 v4.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	go.opentelemetry.io/otel v1.46.0
