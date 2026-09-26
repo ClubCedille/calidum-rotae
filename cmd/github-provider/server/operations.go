@@ -24,12 +24,13 @@ const (
 const defaultWorkflowRef = "main"
 
 type workflowDispatchBody struct {
-	Ref    string            `json:"ref,omitempty"`
-	Inputs map[string]string `json:"inputs,omitempty"`
+	Ref              string            `json:"ref,omitempty"`
+	Inputs           map[string]string `json:"inputs,omitempty"`
+	ReturnRunDetails bool              `json:"return_run_details"`
 }
 
 type workflowDispatchResponse struct {
-	WorkflowRunId int `json:"workflow_run_id,omitempty"`
+	WorkflowRunId int64  `json:"workflow_run_id,omitempty"`
 	RunUrl        string `json:"run_url,omitempty"`
 	HtmlUrl       string `json:"html_url,omitempty"`
 }
@@ -68,12 +69,12 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 	log.Printf("%s workflow triggered", message.GetWorkflow())
 
 	var workflowResp workflowDispatchResponse
-    err = json.Unmarshal([]byte(resp), &workflowResp)
+	err = json.Unmarshal([]byte(resp), &workflowResp)
 
 	if err != nil {
 		return &github_provider.WorkflowResponse{}, err
 	}
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: int32(workflowResp.WorkflowRunId)}, nil
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: workflowResp.WorkflowRunId}, nil
 }
 
 func (server *Server) AddCedilleUser(ctx context.Context, message *github_provider.CedilleUserRequest) (*github_provider.WorkflowResponse, error) {
@@ -90,12 +91,13 @@ func (server *Server) AddCedilleUser(ctx context.Context, message *github_provid
 
 	log.Printf("Cedille user workflow triggered for %s", message.GetGithubUsername())
 	var workflowResp workflowDispatchResponse
-    err = json.Unmarshal([]byte(resp), &workflowResp)
+	err = json.Unmarshal([]byte(resp), &workflowResp)
 
 	if err != nil {
 		return &github_provider.WorkflowResponse{}, err
 	}
-	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: int32(workflowResp.WorkflowRunId)}, nil}
+	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: workflowResp.WorkflowRunId}, nil
+}
 
 func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string) (string, error) {
 	token, found := os.LookupEnv(ENV_GITHUB_TOKEN)
@@ -103,7 +105,11 @@ func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string)
 		return "", fmt.Errorf("error getting env var %s", ENV_GITHUB_TOKEN)
 	}
 
-	payload := workflowDispatchBody{Ref: defaultWorkflowRef, Inputs: inputs}
+	payload := workflowDispatchBody{
+		Ref:              defaultWorkflowRef,
+		Inputs:           inputs,
+		ReturnRunDetails: true,
+	}
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(payload); err != nil {

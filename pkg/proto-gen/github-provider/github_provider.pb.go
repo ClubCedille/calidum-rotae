@@ -111,7 +111,7 @@ func (x *FetchPRResponse) GetActiveUserRequests() string {
 
 type WorkflowResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	WorkflowRunID  int32                  `protobuf:"varint,1,opt,name=WorkflowRunID,proto3" json:"WorkflowRunID,omitempty"`
+	WorkflowRunID  int64                  `protobuf:"varint,1,opt,name=WorkflowRunID,proto3" json:"WorkflowRunID,omitempty"`
 	WorkflowRunUrl string                 `protobuf:"bytes,2,opt,name=WorkflowRunUrl,proto3" json:"WorkflowRunUrl,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -147,7 +147,7 @@ func (*WorkflowResponse) Descriptor() ([]byte, []int) {
 	return file_github_provider_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *WorkflowResponse) GetWorkflowRunID() int32 {
+func (x *WorkflowResponse) GetWorkflowRunID() int64 {
 	if x != nil {
 		return x.WorkflowRunID
 	}
@@ -323,7 +323,7 @@ const file_github_provider_proto_rawDesc = "" +
 	"\x0fFetchPRResponse\x12.\n" +
 	"\x12ActiveUserRequests\x18\x01 \x01(\tR\x12ActiveUserRequests\"`\n" +
 	"\x10WorkflowResponse\x12$\n" +
-	"\rWorkflowRunID\x18\x01 \x01(\x05R\rWorkflowRunID\x12&\n" +
+	"\rWorkflowRunID\x18\x01 \x01(\x03R\rWorkflowRunID\x12&\n" +
 	"\x0eWorkflowRunUrl\x18\x02 \x01(\tR\x0eWorkflowRunUrl\"}\n" +
 	"\x11DeploymentRequest\x12\x1a\n" +
 	"\bClubName\x18\x01 \x01(\tR\bClubName\x12\x16\n" +

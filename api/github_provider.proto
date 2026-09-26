@@ -14,7 +14,7 @@ message FetchPRResponse {
 }
 
 message WorkflowResponse {
-    int32 WorkflowRunID = 1;
+    int64 WorkflowRunID = 1;
     string WorkflowRunUrl = 2;
 }
 
