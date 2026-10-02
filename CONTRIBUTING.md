@@ -2,6 +2,8 @@
 
 Want to contribute to Calidum Rotae Backend? Here's an in-depth guide on how to do that.
 
+> Adding a new microservice, RPC, or GitHub workflow? See [Adding a microservice (or a new RPC)](./docs/adding-a-microservice.md).
+
 ## Dependencies
 
 * [Go](https://go.dev/doc/install)

@@ -21,7 +21,9 @@ const (
 	CALIDUM_ROTAE_SERVICE    = "calidum_rotae_service"
 	DISCORD_PROVIDER_SERVICE = "discord_provider"
 	EMAIL_PROVIDER_SERVICE   = "email_provider"
-    SHELL_PROVIDER_SERVICE   = "shell_provider"
+	SHELL_PROVIDER_SERVICE   = "shell_provider"
+	CLUSTER_PROVIDER_SERVICE = "cluster_provider"
+	GITHUB_PROVIDER_SERVICE  = "github_provider"
 )
 
 type Traces struct {
@@ -73,7 +75,7 @@ func SetupOpenTelemetry(ctx context.Context, host, port string) (*sdktrace.Trace
 	// if err != nil {
 	// 	return nil, err
 	// }
-    //    tp, err := newTracerProvider(consoleExporter, otlpExporter)
+	//    tp, err := newTracerProvider(consoleExporter, otlpExporter)
 	tp, err := newTracerProvider(otlpExporter)
 	if err != nil {
 		return nil, err

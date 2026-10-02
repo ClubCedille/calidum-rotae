@@ -12,6 +12,8 @@ on:
           - discord-provider
           - email-provider
           - shell-provider
+          - cluster-provider
+          - github-provider
       tag:
         required: true
         description: Version pour tagger l'image
