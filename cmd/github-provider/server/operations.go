@@ -58,10 +58,7 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 		return &github_provider.WorkflowResponse{}, fmt.Errorf("unknown workflow: %s", message.GetWorkflow())
 	}
 
-	resp, err := dispatchWorkflow(ctx, url, map[string]string{
-		"nom_club": message.GetClubName(),
-		"domaine":  message.GetDomain(),
-	})
+	resp, err := dispatchWorkflow(ctx, url, deploymentWorkflowInputs(message))
 	if err != nil {
 		return &github_provider.WorkflowResponse{}, err
 	}
@@ -97,6 +94,15 @@ func (server *Server) AddCedilleUser(ctx context.Context, message *github_provid
 		return &github_provider.WorkflowResponse{}, err
 	}
 	return &github_provider.WorkflowResponse{WorkflowRunUrl: workflowResp.RunUrl, WorkflowRunID: workflowResp.WorkflowRunId}, nil
+}
+
+func deploymentWorkflowInputs(message *github_provider.DeploymentRequest) map[string]string {
+	return map[string]string{
+		"nom_club": message.GetClubName(),
+		"domaine":  message.GetDomain(),
+		"id":       message.GetUserUID(),
+		"club":     message.GetClubName(),
+	}
 }
 
 func dispatchWorkflow(ctx context.Context, url string, inputs map[string]string) (string, error) {

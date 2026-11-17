@@ -49,6 +49,12 @@ func TestRequestDeployment(t *testing.T) {
 			if payload.Inputs["domaine"] != "wiki.test-club.etsmtl.club" {
 				t.Fatalf("unexpected domaine input: %q", payload.Inputs["domaine"])
 			}
+			if payload.Inputs["id"] != "local-test" {
+				t.Fatalf("unexpected id input: %q", payload.Inputs["id"])
+			}
+			if payload.Inputs["club"] != "test-club" {
+				t.Fatalf("unexpected club input: %q", payload.Inputs["club"])
+			}
 
 			return &http.Response{
 				StatusCode: http.StatusOK,

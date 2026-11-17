@@ -119,11 +119,26 @@ In `cmd/github-provider/server/operations.go`:
    `https://api.github.com/repos/clubCedille/k8s-shared/actions/workflows/<file>.yml/dispatches`.
 2. Add a `"<name>": <URL>` entry to the `workflowURLs` map in
    `RequestDeployment`.
-3. All deployment workflows share the same inputs as `grav` (`nom_club` +
-   `domaine`); they are sent to `dispatchWorkflow` in a single map. Input keys
-   must match each workflow's `workflow_dispatch.inputs` **exactly** or GitHub
-   returns `422`. If a future workflow needs different inputs, give it a
-   dedicated RPC (like `AddCedilleUser`) instead.
+3. All deployment workflows share the same inputs as `grav` (`nom_club`,
+   `domaine`, `id` and `club`); they are sent to `dispatchWorkflow` in a
+   single map. Input keys must match each workflow's
+   `workflow_dispatch.inputs` **exactly** or GitHub returns `422`. If a future
+   workflow needs different inputs, give it a dedicated RPC (like
+   `AddCedilleUser`) instead.
+
+Deployment workflow inputs:
+
+| proto field          | workflow input       | JSON body key       |
+|----------------------|----------------------|---------------------|
+| `ClubName`           | `nom_club`, `club`   | `clubName`          |
+| `Domain`             | `domaine`            | `domain`            |
+| `Workflow`           | (selects workflow)   | `workflow`          |
+| `UserUID`            | `id`                 | `userUID`           |
+
+`id` and `club` are used by the k8s-shared workflows to annotate the generated
+Argo CD `Application` and to label the PR for ownership lookup. `club` is the
+club owning the requested deployment; `nom_club` remains the resource naming
+prefix.
 
 ### `AddCedilleUser` (example of a dedicated RPC)
 
