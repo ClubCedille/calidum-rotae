@@ -140,6 +140,17 @@ Argo CD `Application` and to label the PR for ownership lookup. `club` is the
 club owning the requested deployment; `nom_club` remains the resource naming
 prefix.
 
+### `FetchPR`
+
+Returns all pull requests in `ClubCedille/k8s-shared` labelled
+`userid:<UserUID>` as a JSON array in `FetchPRResponse.ActiveUserRequests`.
+Open and closed PRs are included. The array contains the raw GitHub issue
+objects for the matching pull requests.
+
+| proto field | JSON body key |
+|-------------|---------------|
+| `UserUID`   | `userUID`     |
+
 ### `AddCedilleUser` (example of a dedicated RPC)
 
 Dispatches the `add-new-member.yml` workflow (const `CEDILLE_USER_WORKFLOW_URL`

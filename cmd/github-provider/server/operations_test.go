@@ -86,3 +86,71 @@ func TestRequestDeployment(t *testing.T) {
 		t.Fatalf("unexpected workflow run URL: %q", response.GetWorkflowRunUrl())
 	}
 }
+
+func TestFetchPR(t *testing.T) {
+	t.Setenv(ENV_GITHUB_TOKEN, "test-token")
+
+	originalClient := http.DefaultClient
+	http.DefaultClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.Method != http.MethodGet {
+				t.Fatalf("expected GET request, got %s", req.Method)
+			}
+			if req.URL.Path != "/repos/ClubCedille/k8s-shared/issues" {
+				t.Fatalf("unexpected URL path: %s", req.URL.Path)
+			}
+			if got := req.Header.Get("Authorization"); got != "Bearer test-token" {
+				t.Fatalf("expected bearer token, got %q", got)
+			}
+
+			query := req.URL.Query()
+			if query.Get("labels") != "userid:42" {
+				t.Fatalf("unexpected labels query: %q", query.Get("labels"))
+			}
+			if query.Get("state") != "all" {
+				t.Fatalf("unexpected state query: %q", query.Get("state"))
+			}
+			if query.Get("page") != "1" {
+				t.Fatalf("unexpected page query: %q", query.Get("page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(bytes.NewBufferString(`[
+					{"number":12,"title":"PR for user 42","pull_request":{"url":"https://api.github.com/repos/ClubCedille/k8s-shared/pulls/12"}},
+					{"number":13,"title":"Issue without a pull request"}
+				]`)),
+				Request: req,
+			}, nil
+		}),
+	}
+	t.Cleanup(func() {
+		http.DefaultClient = originalClient
+	})
+
+	response, err := NewServer().FetchPR(context.Background(), &github_provider.FetchPRRequest{UserUID: "42"})
+	if err != nil {
+		t.Fatalf("FetchPR returned an error: %v", err)
+	}
+
+	var pullRequests []struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+	}
+	if err := json.Unmarshal([]byte(response.GetActiveUserRequests()), &pullRequests); err != nil {
+		t.Fatalf("FetchPR returned invalid JSON: %v", err)
+	}
+	if len(pullRequests) != 1 {
+		t.Fatalf("expected 1 pull request, got %d", len(pullRequests))
+	}
+	if pullRequests[0].Number != 12 || pullRequests[0].Title != "PR for user 42" {
+		t.Fatalf("unexpected pull request: %+v", pullRequests[0])
+	}
+}
+
+func TestFetchPRRequiresUserUID(t *testing.T) {
+	if _, err := NewServer().FetchPR(context.Background(), &github_provider.FetchPRRequest{}); err == nil {
+		t.Fatal("FetchPR() error = nil, want missing user UID error")
+	}
+}
