@@ -1,6 +1,6 @@
 services:
   otel-collector:
-    image: otel/opentelemetry-collector:0.122.1
+    image: otel/opentelemetry-collector:0.161.0
     command: [ "--config=/etc/otel-collector.yaml" ]
     volumes:
       - ./.dev/otel-collector.multitenant.yaml:/etc/otel-collector.yaml
@@ -34,7 +34,7 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana:10.3.1
+    image: grafana/grafana:13.2.2
     volumes:
       - ./.dev/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     environment:
