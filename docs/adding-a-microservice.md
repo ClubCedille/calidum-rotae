@@ -128,12 +128,12 @@ In `cmd/github-provider/server/operations.go`:
 
 Deployment workflow inputs:
 
-| proto field          | workflow input       | JSON body key       |
-|----------------------|----------------------|---------------------|
-| `ClubName`           | `nom_club`, `club`   | `clubName`          |
-| `Domain`             | `domaine`            | `domain`            |
-| `Workflow`           | (selects workflow)   | `workflow`          |
-| `UserUID`            | `id`                 | `userUID`           |
+| proto field | workflow input     | JSON body key |
+|-------------|--------------------|---------------|
+| `ClubName`  | `nom_club`, `club` | `clubName`    |
+| `Domain`    | `domaine`          | `domain`      |
+| `Workflow`  | (selects workflow) | `workflow`    |
+| `UserUID`   | `id`               | `userUID`     |
 
 `id` and `club` are used by the k8s-shared workflows to annotate the generated
 Argo CD `Application` and to label the PR for ownership lookup. `club` is the

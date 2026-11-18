@@ -21,6 +21,7 @@ const (
 	K8S_SHARED_REPOSITORY     = "ClubCedille/k8s-shared"
 	OUTLINE_WORKFLOW_URL      = "https://api.github.com/repos/clubCedille/k8s-shared/actions/workflows/request-outline.yml/dispatches"
 	GRAV_WORKFLOW_URL         = "https://api.github.com/repos/clubCedille/k8s-shared/actions/workflows/request-grav.yml/dispatches"
+	S3_WORKFLOW_URL           = "https://api.github.com/repos/clubCedille/k8s-shared/actions/workflows/request-s3.yml/dispatches"
 	CEDILLE_USER_WORKFLOW_URL = "https://api.github.com/repos/clubCedille/Plateforme-Cedille/actions/workflows/add-new-member.yml/dispatches"
 
 	pullRequestsPerPage = 100
@@ -66,6 +67,7 @@ func (server *Server) RequestDeployment(ctx context.Context, message *github_pro
 	workflowURLs := map[string]string{
 		"outline": OUTLINE_WORKFLOW_URL,
 		"grav":    GRAV_WORKFLOW_URL,
+		"s3":      S3_WORKFLOW_URL,
 	}
 
 	url, found := workflowURLs[message.GetWorkflow()]
