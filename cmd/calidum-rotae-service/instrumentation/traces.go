@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -21,7 +21,9 @@ const (
 	CALIDUM_ROTAE_SERVICE    = "calidum_rotae_service"
 	DISCORD_PROVIDER_SERVICE = "discord_provider"
 	EMAIL_PROVIDER_SERVICE   = "email_provider"
-    SHELL_PROVIDER_SERVICE   = "shell_provider"
+	SHELL_PROVIDER_SERVICE   = "shell_provider"
+	CLUSTER_PROVIDER_SERVICE = "cluster_provider"
+	GITHUB_PROVIDER_SERVICE  = "github_provider"
 )
 
 type Traces struct {
@@ -45,11 +47,12 @@ func newConsoleExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 }
 
 func newTracerProvider(otlpExporter sdktrace.SpanExporter) (*sdktrace.TracerProvider, error) {
+	defaultResource := resource.Default()
 	r, err := resource.Merge(
-		resource.Default(),
+		defaultResource,
 		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(CALIDUM_ROTAE_SERVICE),
+			defaultResource.SchemaURL(),
+			semconv.ServiceName(CALIDUM_ROTAE_SERVICE),
 		),
 	)
 
@@ -73,7 +76,7 @@ func SetupOpenTelemetry(ctx context.Context, host, port string) (*sdktrace.Trace
 	// if err != nil {
 	// 	return nil, err
 	// }
-    //    tp, err := newTracerProvider(consoleExporter, otlpExporter)
+	//    tp, err := newTracerProvider(consoleExporter, otlpExporter)
 	tp, err := newTracerProvider(otlpExporter)
 	if err != nil {
 		return nil, err

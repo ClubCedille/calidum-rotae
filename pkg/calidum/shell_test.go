@@ -29,7 +29,7 @@ func TestSendShellRpcRequest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SendShellRpcRequest() error = %v", err)
 	}
-	if response != "shell response" {
+	if string(response) != "shell response" {
 		t.Fatalf("SendShellRpcRequest() response = %q, want %q", response, "shell response")
 	}
 	if provider.request.GetRequestCommand() != "sudo ls" {
