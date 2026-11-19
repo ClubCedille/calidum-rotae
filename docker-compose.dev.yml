@@ -145,9 +145,9 @@ services:
       dockerfile: ./cmd/calidum-rotae-service/Dockerfile
     container_name: calidum_rotae_service
     ports:
-      - 3000:3000
+      - 3005:3005
     expose:
-      - 3000
+      - 3005
     networks:
       - microservices
     depends_on:
@@ -160,7 +160,7 @@ services:
       CALIDUM_ROTAE_SERVICE_API_KEY: ${CALIDUM_ROTAE_SERVICE_API_KEY}
     entrypoint: [
       "/calidum_rotae_service",
-      "--port", "3000",
+      "--port", "3005",
       "--discord_provider_hostname", "discord_provider",
       "--discord_provider_port", "5000",
       "--email_provider_hostname", "email_provider",

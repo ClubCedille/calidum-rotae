@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -47,11 +47,12 @@ func newConsoleExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 }
 
 func newTracerProvider(otlpExporter sdktrace.SpanExporter) (*sdktrace.TracerProvider, error) {
+	defaultResource := resource.Default()
 	r, err := resource.Merge(
-		resource.Default(),
+		defaultResource,
 		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(CALIDUM_ROTAE_SERVICE),
+			defaultResource.SchemaURL(),
+			semconv.ServiceName(CALIDUM_ROTAE_SERVICE),
 		),
 	)
 
