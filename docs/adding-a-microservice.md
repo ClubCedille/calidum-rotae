@@ -9,7 +9,7 @@ provider.
 
 ```
 HTTP client
-   │  POST /discord /email /command /github /github/user /cluster (X-API-KEY)
+   │  POST /discord /email /command /github /github/user /github/prs /cluster (X-API-KEY)
    ▼
 calidum-rotae-service (gin, port 3000)
    │  cmd/calidum-rotae-service/server/http.go  →  pkg/calidum (CalidumClient)
@@ -151,6 +151,16 @@ objects for the matching pull requests.
 |-------------|---------------|
 | `UserUID`   | `userUID`     |
 
+HTTP route: `POST /github/prs`. The JSON array is returned in
+`{"response": "..."}` like the other read-style routes. Curl:
+
+```bash
+curl -X POST localhost:3000/github/prs \
+  -H "X-API-KEY: $CALIDUM_ROTAE_SERVICE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"userUID": "42"}'
+```
+
 ### `AddCedilleUser` (example of a dedicated RPC)
 
 Dispatches the `add-new-member.yml` workflow (const `CEDILLE_USER_WORKFLOW_URL`
@@ -185,9 +195,10 @@ curl -X POST localhost:3000/github/user \
   }'
 ```
 
-HTTP routes: `POST /github` (deployment, body carries `"workflow"`), and
-`POST /github/user` (add member). Both return the workflow run URL in
-`{"response": "..."}`.
+HTTP routes: `POST /github` (deployment, body carries `"workflow"`),
+`POST /github/user` (add member), and `POST /github/prs` (fetch a user's pull
+requests). The workflow routes return the workflow run URL in
+`{"response": "..."}`; the pull request route returns the JSON array there.
 
 ### GitHub dispatch semantics baked into `dispatchWorkflow`
 

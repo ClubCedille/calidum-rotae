@@ -17,6 +17,8 @@ type fakeCalidumClient struct {
 	shellResponse  string
 	githubRequest  string
 	githubResponse string
+	prRequest      string
+	prResponse     string
 	userRequest    string
 	userResponse   string
 }
@@ -37,6 +39,11 @@ func (f *fakeCalidumClient) SendShellRpcRequest(_ context.Context, body []byte) 
 func (f *fakeCalidumClient) SendGithubRpcRequest(_ context.Context, body []byte) ([]byte, error) {
 	f.githubRequest = string(body)
 	return []byte(f.githubResponse), nil
+}
+
+func (f *fakeCalidumClient) SendGithubPRRpcRequest(_ context.Context, body []byte) ([]byte, error) {
+	f.prRequest = string(body)
+	return []byte(f.prResponse), nil
 }
 
 func (f *fakeCalidumClient) SendCedilleUserRpcRequest(_ context.Context, body []byte) ([]byte, error) {
@@ -111,6 +118,41 @@ func TestGithubPostRequestRoutesToDeploymentRPC(t *testing.T) {
 	}
 	if body.Response != client.githubResponse {
 		t.Fatalf("POST /github response = %q, want %q", body.Response, client.githubResponse)
+	}
+}
+
+func TestGithubPRPostRequestRoutesToFetchPRRPC(t *testing.T) {
+	const apiKey = "test-api-key"
+	t.Setenv(ENV_CALIDUM_ROTAE_SERVICE_API_KEY, apiKey)
+
+	client := &fakeCalidumClient{prResponse: `[{"number":12,"title":"PR for user 42"}]`}
+	v := viper.New()
+	v.Set(config.FlagAllowedDomains, []string{"https://cedille.etsmtl.ca"})
+	router := initHTTPServerHandler(context.Background(), v, client)
+
+	requestBody := `{"userUID":"42"}`
+	request := httptest.NewRequest(http.MethodPost, GITHUB_PR_POST_REQUEST, strings.NewReader(requestBody))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-API-KEY", apiKey)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("POST %s status = %d, want %d: %s", GITHUB_PR_POST_REQUEST, response.Code, http.StatusOK, response.Body.String())
+	}
+
+	var body struct {
+		Response string `json:"response"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatalf("POST %s returned invalid JSON: %v", GITHUB_PR_POST_REQUEST, err)
+	}
+	if body.Response != client.prResponse {
+		t.Fatalf("POST %s response = %q, want %q", GITHUB_PR_POST_REQUEST, body.Response, client.prResponse)
+	}
+	if client.prRequest != requestBody {
+		t.Fatalf("POST %s forwarded body = %q, want %q", GITHUB_PR_POST_REQUEST, client.prRequest, requestBody)
 	}
 }
 
