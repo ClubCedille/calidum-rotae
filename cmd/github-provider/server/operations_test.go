@@ -1,0 +1,156 @@
+package server
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"testing"
+
+	github_provider "github.com/clubcedille/calidum-rotae-backend/pkg/proto-gen/github-provider"
+)
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+func TestRequestDeployment(t *testing.T) {
+	t.Setenv(ENV_GITHUB_TOKEN, "test-token")
+
+	originalClient := http.DefaultClient
+	http.DefaultClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.Method != http.MethodPost {
+				t.Fatalf("expected POST request, got %s", req.Method)
+			}
+			if req.URL.String() != OUTLINE_WORKFLOW_URL {
+				t.Fatalf("expected URL %s, got %s", OUTLINE_WORKFLOW_URL, req.URL)
+			}
+			if got := req.Header.Get("Authorization"); got != "Bearer test-token" {
+				t.Fatalf("expected bearer token, got %q", got)
+			}
+
+			var payload workflowDispatchBody
+			if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+				t.Fatalf("decode dispatch payload: %v", err)
+			}
+			if payload.Ref != defaultWorkflowRef {
+				t.Fatalf("expected ref %q, got %q", defaultWorkflowRef, payload.Ref)
+			}
+			if !payload.ReturnRunDetails {
+				t.Fatal("expected return_run_details to be true")
+			}
+			if payload.Inputs["nom_club"] != "test-club" {
+				t.Fatalf("unexpected nom_club input: %q", payload.Inputs["nom_club"])
+			}
+			if payload.Inputs["domaine"] != "wiki.test-club.etsmtl.club" {
+				t.Fatalf("unexpected domaine input: %q", payload.Inputs["domaine"])
+			}
+			if payload.Inputs["id"] != "local-test" {
+				t.Fatalf("unexpected id input: %q", payload.Inputs["id"])
+			}
+			if payload.Inputs["club"] != "test-club" {
+				t.Fatalf("unexpected club input: %q", payload.Inputs["club"])
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(bytes.NewBufferString(
+					`{"workflow_run_id":29461610387,"run_url":"https://api.github.com/repos/ClubCedille/k8s-shared/actions/runs/29461610387","html_url":"https://github.com/ClubCedille/k8s-shared/actions/runs/29461610387"}`,
+				)),
+				Request: req,
+			}, nil
+		}),
+	}
+	t.Cleanup(func() {
+		http.DefaultClient = originalClient
+	})
+
+	response, err := NewServer().RequestDeployment(context.Background(), &github_provider.DeploymentRequest{
+		ClubName: "test-club",
+		Domain:   "wiki.test-club.etsmtl.club",
+		Workflow: "outline",
+		UserUID:  "local-test",
+	})
+	if err != nil {
+		t.Fatalf("RequestDeployment returned an error: %v", err)
+	}
+	if response.GetWorkflowRunID() != 29461610387 {
+		t.Fatalf("expected workflow run ID 29461610387, got %d", response.GetWorkflowRunID())
+	}
+	if response.GetWorkflowRunUrl() != "https://api.github.com/repos/ClubCedille/k8s-shared/actions/runs/29461610387" {
+		t.Fatalf("unexpected workflow run URL: %q", response.GetWorkflowRunUrl())
+	}
+}
+
+func TestFetchPR(t *testing.T) {
+	t.Setenv(ENV_GITHUB_TOKEN, "test-token")
+
+	originalClient := http.DefaultClient
+	http.DefaultClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.Method != http.MethodGet {
+				t.Fatalf("expected GET request, got %s", req.Method)
+			}
+			if req.URL.Path != "/repos/ClubCedille/k8s-shared/issues" {
+				t.Fatalf("unexpected URL path: %s", req.URL.Path)
+			}
+			if got := req.Header.Get("Authorization"); got != "Bearer test-token" {
+				t.Fatalf("expected bearer token, got %q", got)
+			}
+
+			query := req.URL.Query()
+			if query.Get("labels") != "userid:42" {
+				t.Fatalf("unexpected labels query: %q", query.Get("labels"))
+			}
+			if query.Get("state") != "all" {
+				t.Fatalf("unexpected state query: %q", query.Get("state"))
+			}
+			if query.Get("page") != "1" {
+				t.Fatalf("unexpected page query: %q", query.Get("page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(bytes.NewBufferString(`[
+					{"number":12,"title":"PR for user 42","pull_request":{"url":"https://api.github.com/repos/ClubCedille/k8s-shared/pulls/12"}},
+					{"number":13,"title":"Issue without a pull request"}
+				]`)),
+				Request: req,
+			}, nil
+		}),
+	}
+	t.Cleanup(func() {
+		http.DefaultClient = originalClient
+	})
+
+	response, err := NewServer().FetchPR(context.Background(), &github_provider.FetchPRRequest{UserUID: "42"})
+	if err != nil {
+		t.Fatalf("FetchPR returned an error: %v", err)
+	}
+
+	var pullRequests []struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+	}
+	if err := json.Unmarshal([]byte(response.GetActiveUserRequests()), &pullRequests); err != nil {
+		t.Fatalf("FetchPR returned invalid JSON: %v", err)
+	}
+	if len(pullRequests) != 1 {
+		t.Fatalf("expected 1 pull request, got %d", len(pullRequests))
+	}
+	if pullRequests[0].Number != 12 || pullRequests[0].Title != "PR for user 42" {
+		t.Fatalf("unexpected pull request: %+v", pullRequests[0])
+	}
+}
+
+func TestFetchPRRequiresUserUID(t *testing.T) {
+	if _, err := NewServer().FetchPR(context.Background(), &github_provider.FetchPRRequest{}); err == nil {
+		t.Fatal("FetchPR() error = nil, want missing user UID error")
+	}
+}
