@@ -1,6 +1,6 @@
 services:
   otel-collector:
-    image: otel/opentelemetry-collector:0.161.0
+    image: otel/opentelemetry-collector:0.166.0
     command: [ "--config=/etc/otel-collector.yaml" ]
     volumes:
       - ./.dev/otel-collector.multitenant.yaml:/etc/otel-collector.yaml
