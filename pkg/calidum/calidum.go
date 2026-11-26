@@ -25,6 +25,7 @@ type CalidumClient interface {
 	SendEmailRpcRequest(ctx context.Context, body []byte) (err error)
 	SendShellRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendGithubRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
+	SendGithubPRRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendCedilleUserRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 	SendClusterRpcRequest(ctx context.Context, body []byte) (response []byte, err error)
 }
@@ -118,6 +119,24 @@ func (c *CalidumService) SendGithubRpcRequest(ctx context.Context, body []byte) 
 		return jsonResponse, fmt.Errorf("error sending rpc request to Github provider: %s Response: %s", err.Error(), resp)
 	}
 	jsonResponse = []byte(resp.GetWorkflowRunUrl())
+
+	return jsonResponse, nil
+}
+
+func (c *CalidumService) SendGithubPRRpcRequest(ctx context.Context, body []byte) (jsonResponse []byte, err error) {
+	var data *github_provider.FetchPRRequest
+	jsonResponse = []byte("")
+	if err = json.Unmarshal(body, &data); err != nil {
+		return jsonResponse, fmt.Errorf("error binding JSON data to gRPC Github PR object: %s", err.Error())
+	}
+
+	resp, err := c.githubProviderService.FetchPR(ctx, &github_provider.FetchPRRequest{
+		UserUID: data.UserUID,
+	})
+	if err != nil {
+		return jsonResponse, fmt.Errorf("error sending rpc request to Github provider: %s Response: %s", err.Error(), resp)
+	}
+	jsonResponse = []byte(resp.GetActiveUserRequests())
 
 	return jsonResponse, nil
 }
